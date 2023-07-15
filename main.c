@@ -8,6 +8,31 @@
 
 
 
+
+
+
+
+
+
+/**
+ * Ritorna 1 se la stazione esiste sull'autostrada.
+ *
+ * @param distanza distanza in cui si trova la stazione di interesse.
+ * @return 1 se la stazione esiste sull'autostrada, 0 altrimenti
+ */
+int StazioneGiaPresente(int distanza){
+    //TODO da fare
+    if(distanza==1)
+        return 1;
+    return 0;
+}
+
+
+
+
+
+
+
 /**
  * Aggiungi stazione all'autostrada.
  */
@@ -29,15 +54,25 @@ void AggiungiStazione(){
     //lettura distanza della stazione da aggiungere
     scanf("%d", &distanza);
 
-    //TODO if
-    //Se stazione già presente:
-        //printf("non aggiunta")
-    //altrimenti
-        //crea stazione
+    //stazione già presente
+    if(StazioneGiaPresente(distanza)==1){
+        printf("non aggiunta");
+    }
+    //stazione NON presente
+    else{
         //leggi numero di macchine che bisogna aggiungere alla stazione
-        //leggi autonomia macchine che bisogna aggiungere
-        //aggiungi macchina alla stazione
-        //printf("aggiunta")
+        scanf("%d", &numeroAuto);
+
+        //TODO crea parco auto di dimensione numeroAuto
+
+        //aggiungi auto con la loro autonomia al parco auto
+        for (int i = 0; i < numeroAuto; ++i) {
+            //leggi autonomia auto da aggiungere al parco auto
+            scanf("%d", &autonomiaAuto);
+            //TODO aggiungi autonomiaAuto al parco auto sopra creato
+        }
+        printf("aggiunta");
+    }
 }
 
 /**
@@ -57,13 +92,18 @@ void AggiungiAuto(){
     //lettura distanzaStazione della stazione a cui aggiungere una macchina
     scanf("%d", &distanzaStazione);
 
-    //TODO if
-    //Se stazione NON presente:
-        //printf("non aggiunta")
-    //altrimenti
-        //leggi autonomia macchina che bisogna aggiungere
-        //aggiungi macchina alla stazione
-        //printf("aggiunta")
+    //stazione NON presente
+    if(StazioneGiaPresente(distanzaStazione)==0){
+        printf("non aggiunta");
+    }
+    //stazione presente
+    else{
+        //leggi autonomia auto da aggiungere
+        scanf("%d", &autonomiaAutoDaAggiungere);
+
+        //TODO aggiungi auto al praco auto della stazione
+        printf("aggiunta");
+    }
 }
 
 /**
@@ -78,12 +118,15 @@ void DemolisciStazione(){
     //lettura distanza della stazione da demolire
     scanf("%d", &distanza);
 
-    //TODO if
-    //Se stazione NON presente:
-        //printf("non demolita")
-    //altrimenti
-        //demolisci stazione
-        //printf("demolita")
+    //Se stazione NON presente
+    if(StazioneGiaPresente(distanza)==0){
+        printf("non demolita");
+    }
+    //stazione presente
+    else{
+        //TODO demolisci stazione
+        printf("demolita");
+    }
 }
 
 /**
@@ -102,16 +145,22 @@ void RottamaAuto(){
     //lettura distanzaStazione della stazione da cui rottamare una macchina
     scanf("%d", &distanzaStazione);
 
-    //TODO if
-    //Se stazione NON presente:
-        //printf("non rottamata")
-    //altrimenti
-        //leggi autonomia macchina che bisogna rottamare
-        //Se macchina NON presente:
+    //Se stazione NON presente
+    if(StazioneGiaPresente(distanzaStazione)==0){
+        printf("non rottamata");
+    }
+    //stazione presente
+    else{
+        //leggi autonomia auto da rottamare
+        scanf("%d", &autonomiaAutoDaRottamare);
+
+        //TODO if
+        //Se auto NON presente nel parco auto della stazione
             //printf("non rottamata")
         //altrimenti
             //rottama macchina
-            //printf("rottamata)"
+            //printf("rottamata")
+    }
 }
 
 /**
@@ -131,15 +180,22 @@ void PianificaPercorso(){
     scanf("%d", &distanzaStazionePartenza);
     scanf("%d", &distanzaStazioneArrivo);
 
-    //TODO if
-    //Se stazione partenza NON esiste:
-        //printf("nessun percorso")
-    //Se stazione arrivo NON esiste:
-        //printf("nessun percorso")
-    //Se stazione partenza == stazione arrivo
-        //printf("%d", distanzaStazionePartenza)
-    //altrimenti
-        //pianificare il percorso
+    //Se stazione partenza NON esiste
+    if(StazioneGiaPresente(distanzaStazionePartenza)==0){
+        printf("nessun percorso");
+    }
+    //se stazione arrivo NON esiste
+    else if(StazioneGiaPresente(distanzaStazioneArrivo)==0){
+        printf("nessun percorso");
+    }
+    //se stazione partenza == stazione arrivo
+    else if(distanzaStazionePartenza==distanzaStazioneArrivo){
+        printf("%d", distanzaStazionePartenza);
+    }
+    //ricerca il percorso ottimale per andare dalla partenza all'arrivo
+    else{
+        //TODO pianifica percorso
+    }
 }
 
 
