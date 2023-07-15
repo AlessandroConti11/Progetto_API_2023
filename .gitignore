@@ -1,2 +1,36 @@
-# Project exclude paths
+#ignore all folders
+/target/
+/.idea/
 /cmake-build-debug/
+
+
+#ignore all compiled sources
+*.com
+*.class
+*.dll
+*.exe
+*.o
+*.so
+
+#ignore all packages
+*.7z
+*.dmg
+*.gz
+*.iso
+*.rar
+*.tar
+*.zip
+
+#ignore all logs & databases
+*.log
+*.sql
+*.sqlite
+
+#ignore all OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
