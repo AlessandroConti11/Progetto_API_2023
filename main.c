@@ -11,7 +11,7 @@
 /**
  * Define --> Dimensione iniziale della HashTable che rappresetna un parco auto.
  */
-#define DIMENSIONE_INIZIALE_PARCO_AUTO 11
+#define DIMENSIONE_INIZIALE_PARCO_AUTO 13
 
 /**
  * Define --> Dimensione iniziale della HashTable che rappresenta l'autostrada.
@@ -22,6 +22,11 @@
  * Define --> Percentuale oltre al quale andrà reallocato la HashTable
  */
 #define PERCENTUALE_REALLOC 0.75
+
+/**
+ * Define --> Costante di Knuth, serve per la funzione di hash
+ */
+#define COSTANTE_DI_KNUTH 2654435769
 
 
 
@@ -59,7 +64,6 @@ struct HashTable{
 
 
 
-//TODO scegliere funzione adatta
 /**
  * Funzione di hash --> ritorna la posizione dato il valore richiesto.
  *
@@ -67,11 +71,12 @@ struct HashTable{
  * @param capacita dimensione della HashTable.
  * @return la posizione della chiave nella HashTable.
  */
-int funzioneDiHash(int chiave, int capacita){
-    return 1;
+unsigned int funzioneDiHash(unsigned int chiave, unsigned int capacita){
+    //funzione di hash di moltiplicazione modulare
+    //utilizzando la costante di Knuth
+    return (int) ((long)(chiave * COSTANTE_DI_KNUTH) % capacita);
 }
 
-//TODO scegliere funzione per nuova capacità adatta
 /**
  * Ritorna la nuova capacità della HashTable.
  *
@@ -79,7 +84,7 @@ int funzioneDiHash(int chiave, int capacita){
  * @return la nuova capacità della HashTable.
  */
 int nuovaCapacita(int capacitaIniziale){
-    return 1;
+    return capacitaIniziale*2+11;
 }
 
 /**
