@@ -9,9 +9,19 @@
 #define LUNGHEZZA_MAX_COMANDI 20
 
 /**
- * Define --> Dimensione iniziale della HashTable.
+ * Define --> Dimensione iniziale della HashTable che rappresetna un parco auto.
  */
 #define DIMENSIONE_INIZIALE_PARCO_AUTO 11
+
+/**
+ * Define --> Dimensione iniziale della HashTable che rappresenta l'autostrada.
+ */
+#define DIMENSIONE_INIZIALE_AUTOSTRADA 31
+
+/**
+ * Define --> Percentuale oltre al quale andrà reallocato la HashTable
+ */
+#define PERCENTUALE_REALLOC 0.75
 
 
 
@@ -20,9 +30,9 @@
  */
 struct HashNode{
     /**
-     * Chiave che contiene l'autonomia della macchina.
+     * Chiave.
      */
-    int autonomia;
+    int chiave;
     /**
      * Nodo successivo nella stessa posizione della HashTable.
      */
@@ -46,155 +56,258 @@ struct HashTable{
      */
     int capacita;
 };
-//TODO sistemare la realloc - capacità
 
 
 
-//GESTIONE HASH
+//TODO scegliere funzione adatta
 /**
- * Ritorna la posizione in cui si trova la macchina.
+ * Funzione di hash --> ritorna la posizione dato il valore richiesto.
  *
- * @param autonomia chiave che rappresenta l'autonomia che ha la macchina.
- * @return la posizione in cui si trova la macchina.
+ * @param chiave valore d'interesse.
+ * @param capacita dimensione della HashTable.
+ * @return la posizione della chiave nella HashTable.
  */
-int parcoAutoHash(int autonomia){
-    //TODO algoritmo di hash decente
+int funzioneDiHash(int chiave, int capacita){
+    return 1;
+}
+
+//TODO scegliere funzione per nuova capacità adatta
+/**
+ * Ritorna la nuova capacità della HashTable.
+ *
+ * @param capacitaIniziale capacità iniziale della HashTable.
+ * @return la nuova capacità della HashTable.
+ */
+int nuovaCapacita(int capacitaIniziale){
     return 1;
 }
 
 /**
- * Gestione della realloc, dopo che si è inserito troppe auto.
+ * Inizializzazione della HashTable.
  *
- * @param hashTable la HashTable da reallocare
+ * @param capacita la dimensione iniziale della HashTable.
+ * @return la HasTable inizializzata.
  */
-void parcoAutoReHash(struct HashTable *hashTable){
-    //TODO nuova capacità
-    /**
-     * Nuova capacità che avrà la nuova HashTable.
-     */
-    int nuovaCapacita=hashTable->capacita *2+11;
+struct HashTable *inizializzazioneHashTable(int capacita){
     /**
      * Nuova HashTable.
      */
-     struct HashNode **nuovaTable=(struct HashNode **) calloc(nuovaCapacita, sizeof(struct HashNode));
+    struct HashTable *hashTable=(struct HashTable *) malloc(sizeof(struct HashTable));
 
-     //rialloca le cose già presenti nella vecchia HashTable
+    //inizializza valori
+    hashTable->dimensione=0;
+    hashTable->capacita=capacita;
+    hashTable->table=(struct HashNode **) calloc(hashTable->capacita, sizeof(struct HashNode *));
+
+    //ritorna la HashTable inizializzata
+    return hashTable;
+}
+
+/**
+ * Reinizializza la HashTable --> da una HashTable già esistente la realloca in un'altra con capacità maggiore
+ *
+ * @param hashTable la HashTable da reinizializzare.
+ */
+void reHashTable(struct HashTable *hashTable){
+    /**
+     * Nuova capacità della HashTable.
+     */
+    int capacitaNuova= nuovaCapacita(hashTable->capacita);
+    /**
+     * Nuovo indice in cui spostare gli HashNode dalla HashTable vecchia a quella nuova.
+     */
+    int nuovoIndice=0;
+    /**
+     * Nuova HashTable.
+     */
+    struct HashNode **nuovaHashTable=(struct HashNode **) calloc(capacitaNuova, sizeof(struct HashNode *));
+    /**
+    * Nodo della HashTable corrente.
+    */
+    struct HashNode *corrente=NULL;
+    /**
+     * Nodo successivo da vedere.
+     */
+    struct HashNode *prossimo=NULL;
+
+
+    //spostiamo dalla vecchia HashTable a quella nuova
     for (int i = 0; i < hashTable->capacita; ++i) {
-        /**
-         * Nuovo nodo da inserire nella nuova HashTable.
-         */
-        struct HashNode *corrente=hashTable->table[i];
-        while (corrente->successivo!=NULL){
-            /**
-             * Nuovo nodo successivo.
-             */
-            struct HashNode *successivo=corrente->successivo;
-            /**
-             * Nuovo indice.
-             */
-            int nuovoIndice= parcoAutoHash(corrente->autonomia);
+        corrente=hashTable->table[i];
+
+        //fino a che NON abbiamo finito di spostare tutte le HashNode
+        while(corrente!=NULL){
+            //salviamo il prossimo HashNode da visitare
+            prossimo=corrente->successivo;
+            //salviamo il nuovo indice in cui andare a mettere la HashNode corrente
+            nuovoIndice= funzioneDiHash(corrente->chiave, capacitaNuova);
+
+            //spostiamo il nodo
+            corrente->successivo=nuovaHashTable[nuovoIndice];
+            nuovaHashTable[nuovoIndice]=corrente;
+            //il nodo corrente da vedere diventa il prossimo
+            corrente=prossimo;
         }
+    }
+
+    //eliminiamo la vecchia table
+    free(hashTable->table);
+    //aggiungiamo la nuova table
+    hashTable->table=nuovaHashTable;
+    //aggiorniamo la capacità
+    hashTable->capacita=capacitaNuova;
+}
+
+/**
+ * Inserimento in una HashTable di un HashNode.
+ *
+ * @param hashTable la HashTable alla quale va aggiunto il nodo.
+ * @param chiave la chiave da aggiungere alla HashTable.
+ */
+void inserimentoNellaHashTable(struct HashTable *hashTable, int chiave){
+    /**
+     * Indice in cui inserire la chiave.
+     */
+    int indice= funzioneDiHash(chiave, hashTable->capacita);
+    /**
+     * Nuovo HashNode da inserire nella HashTable.
+     */
+    struct HashNode *nuovoNodo=(struct HashNode *) malloc(sizeof(struct HashNode));
+
+
+    //inserimento valori nel nuovo HashNode
+    nuovoNodo->chiave=chiave;
+    nuovoNodo->successivo=hashTable->table[indice];
+    hashTable->table[indice]=nuovoNodo;
+    //è stato aggiunto un nuovo nodo, questo implica che bisogna aumentare la dimensione della HashTable
+    hashTable->dimensione++;
+
+    //bisogna reallocare la HashTable
+    if(hashTable->dimensione > hashTable->capacita*PERCENTUALE_REALLOC){
+        reHashTable(hashTable);
     }
 }
 
 /**
- * Inserisci una macchina con la sua autonomia nel parco auto.
+ * Ricerca di una chiave nella HashTable.
  *
- * @param hashTable il parco auto a cui si vuole aggiungere la stazione.
- * @param autonomia l'autonomia della macchina da aggiungere.
+ * @param hashTable la HashTable nella quale dobbiamo eseguire la ricerca.
+ * @param chiave la chiave da cercare.
+ * @return il HashNode che contiene la chiave di interesse
  */
-void inserisciNelParcoAuto(struct HashTable *hashTable, int autonomia){
+struct HashNode *ricercaHashNode(struct HashTable *hashTable, int chiave){
     /**
-     * Indice in cui si dovrà aggiungere la macchina.
+     * Indice nel quale si trova la chiave.
      */
-    int indice= parcoAutoHash(autonomia);
+    int indice= funzioneDiHash(chiave, hashTable->capacita);
     /**
-     * Creazione nodo da aggiungere alla HashTable.
-     */
-    struct HashNode *nuovaMacchina=(struct HashNode *) malloc(sizeof(struct HashNode));
-    nuovaMacchina->autonomia=autonomia; //salvataggio autonomia
-    nuovaMacchina->successivo=hashTable->table[indice]; //salvataggio nodo successivo nella stessa posizione della HashTable
-
-    //aggiunta nodo alla HashTable
-    hashTable->table[indice]=nuovaMacchina;
-}
-
-/**
- * Ricerca di una macchina nella HashTable.
- *
- * @param hashTable il parco auto in cui si vuole cercare la macchina.
- * @param autonomia l'autonomia della macchina da cercare.
- * @return la macchina cercata oppure NULL.
- */
-struct HashNode *cercaAuto(struct HashTable *hashTable, int autonomia){
-    /**
-     * Indice in sui si trova la macchina richiesta.
-     */
-    int indice= parcoAutoHash(autonomia);
-    /**
-     * Nodo corrente.
+     * HashNode corrente.
      */
     struct HashNode *corrente=hashTable->table[indice];
 
-    //fino a che non ci sono più macchine nel nodo
+    //fino a che ci sono altri HashNode nella posizione richiesta
     while(corrente!=NULL){
-        //abbiamo trovato la macchina?
-        if(corrente->autonomia==autonomia){
+        //abbiamo trovato la chiave
+        if(corrente->chiave==chiave){
             return corrente;
         }
-        //guardiamo la macchina successiva nella lista
+        //guardiamo nel prossimo HashNode
         else{
             corrente=corrente->successivo;
         }
     }
 
-    //macchina NON trovata
-    return NULL;
+    //NON abbiamo trovato la chiave --> corrente=NULL
+    return corrente;
 }
 
-void eliminaAuto(struct HashTable *hashTable, int autonomia){
+/**
+ * Ricerca esistenza chiave nella HashTable.
+ *
+ * @param hashTable la HashTable nella quale dobbiamo eseguire la ricerca.
+ * @param chiave la chiave da cercare.
+ * @return 1 se la chiave è presente, 0 se NON è presente.
+ */
+int esisteChiaveNellaHashTable(struct HashTable *hashTable, int chiave){
     /**
-     * Indice in sui si trova la macchina richiesta.
+     * Indice nel quale si trova la chiave.
      */
-    int indice= parcoAutoHash(autonomia);
+    int indice= funzioneDiHash(chiave, hashTable->capacita);
     /**
-     * Nodo corrente.
+     * HashNode corrente.
+     */
+    struct HashNode *corrente=hashTable->table[indice];
+
+
+    //fino a che ci sono altri HashNode nella posizione richiesta
+    while(corrente!=NULL){
+        //abbiamo trovato la chiave
+        if(corrente->chiave==chiave){
+            return 1;
+        }
+            //guardiamo nel prossimo HashNode
+        else{
+            corrente=corrente->successivo;
+        }
+    }
+
+    //NON abbiamo trovato la chiave
+    return 0;
+}
+
+/**
+ * Elimina la chiave dalla HashTable.
+ *
+ * @param hashTable la HashTable nella quale dobbiamo eliminare una chiave.
+ * @param chiave la chiave da eliminare.
+ */
+void eliminaHashNode(struct HashTable *hashTable, int chiave){
+    /**
+     * Indice nel quale si trova la chiave.
+     */
+    int indice= funzioneDiHash(chiave, hashTable->capacita);
+    /**
+     * Nodo corrente,
+     * corrente=corrente->successivo.
      */
     struct HashNode *corrente=hashTable->table[indice];
     /**
-     * Nodo precedente rispetto a quello corrente.
+     * Nodo precedente,
+     * precedente=corrente.
      */
     struct HashNode *precedente=NULL;
 
-    //ricerca nodo con la chiave corrispondente
-    while (corrente!=NULL && corrente->autonomia!=autonomia){
+
+    //trova il nodo con la chiave corrispondente, assegna corrente AND precedente
+    while (corrente!=NULL && corrente->chiave!=chiave){
         precedente=corrente;
         corrente=corrente->successivo;
     }
 
-    //nodo NON è stato trovato
+    //chiave NON trovata
     if(corrente==NULL){
-        //nodo NON è stato trovato
         return;
     }
-    //nodo è stato trovato
+    //chiave trovata
     else{
-        //il nodo da eliminare è il primo
+        //il nodo da eliminare è il primo della lista presente nella posizione indicata
         if(precedente==NULL){
             hashTable->table[indice]=corrente->successivo;
         }
-        //il nodo da eliminare si trova in mezzo alla lista
+        //il nodo da eliminare NON è il primo della lista presente nella posizione indicate
         else{
             precedente->successivo=corrente->successivo;
         }
     }
 
-    //dealloco il nodo
+    //dealloca il HashNode
     free(corrente);
-
-    //riduco numero di elementi nella HashTable
-
+    //riduciamo il numero di elementi presenti nella HashTable
+    hashTable->dimensione--;
 }
+
+
+
 
 
 
@@ -250,9 +363,9 @@ void AggiungiStazione(){
 
         //TODO crea parco auto di dimensione numeroAuto
 
-        //aggiungi auto con la loro autonomia al parco auto
+        //aggiungi auto con la loro chiave al parco auto
         for (int i = 0; i < numeroAuto; ++i) {
-            //leggi autonomia auto da aggiungere al parco auto
+            //leggi chiave auto da aggiungere al parco auto
             scanf("%d", &autonomiaAuto);
             //TODO aggiungi autonomiaAuto al parco auto sopra creato
         }
@@ -283,7 +396,7 @@ void AggiungiAuto(){
     }
     //stazione presente
     else{
-        //leggi autonomia auto da aggiungere
+        //leggi chiave auto da aggiungere
         scanf("%d", &autonomiaAutoDaAggiungere);
 
         //TODO aggiungi auto al praco auto della stazione
@@ -336,7 +449,7 @@ void RottamaAuto(){
     }
     //stazione presente
     else{
-        //leggi autonomia auto da rottamare
+        //leggi chiave auto da rottamare
         scanf("%d", &autonomiaAutoDaRottamare);
 
         //TODO if
@@ -449,5 +562,3 @@ int main() {
     return 0;
 
 }
-
-
