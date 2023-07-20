@@ -1,15 +1,200 @@
 #include <stdio.h>
+#include <stdlib.h>
+
+
 
 /**
  * Define --> Lunghezza massima che un comando può assumere.
  */
 #define LUNGHEZZA_MAX_COMANDI 20
 
+/**
+ * Define --> Dimensione iniziale della HashTable.
+ */
+#define DIMENSIONE_INIZIALE_PARCO_AUTO 11
 
 
 
+/**
+ * Struct --> Rappresenta un nodo di una HashTable.
+ */
+struct HashNode{
+    /**
+     * Chiave che contiene l'autonomia della macchina.
+     */
+    int autonomia;
+    /**
+     * Nodo successivo nella stessa posizione della HashTable.
+     */
+    struct HashNode *successivo;
+};
+
+/**
+ * Struct --> Rappresenta la HashTable.
+ */
+struct HashTable{
+    /**
+     * Tabella di Hash.
+     */
+    struct HashNode **table;
+    /**
+     * Numero di elementi nella HashTable.
+     */
+    int dimensione;
+    /**
+     * Capacità massima della HastTable, poi andra reallocata.
+     */
+    int capacita;
+};
+//TODO sistemare la realloc - capacità
 
 
+
+//GESTIONE HASH
+/**
+ * Ritorna la posizione in cui si trova la macchina.
+ *
+ * @param autonomia chiave che rappresenta l'autonomia che ha la macchina.
+ * @return la posizione in cui si trova la macchina.
+ */
+int parcoAutoHash(int autonomia){
+    //TODO algoritmo di hash decente
+    return 1;
+}
+
+/**
+ * Gestione della realloc, dopo che si è inserito troppe auto.
+ *
+ * @param hashTable la HashTable da reallocare
+ */
+void parcoAutoReHash(struct HashTable *hashTable){
+    //TODO nuova capacità
+    /**
+     * Nuova capacità che avrà la nuova HashTable.
+     */
+    int nuovaCapacita=hashTable->capacita *2+11;
+    /**
+     * Nuova HashTable.
+     */
+     struct HashNode **nuovaTable=(struct HashNode **) calloc(nuovaCapacita, sizeof(struct HashNode));
+
+     //rialloca le cose già presenti nella vecchia HashTable
+    for (int i = 0; i < hashTable->capacita; ++i) {
+        /**
+         * Nuovo nodo da inserire nella nuova HashTable.
+         */
+        struct HashNode *corrente=hashTable->table[i];
+        while (corrente->successivo!=NULL){
+            /**
+             * Nuovo nodo successivo.
+             */
+            struct HashNode *successivo=corrente->successivo;
+            /**
+             * Nuovo indice.
+             */
+            int nuovoIndice= parcoAutoHash(corrente->autonomia);
+        }
+    }
+}
+
+/**
+ * Inserisci una macchina con la sua autonomia nel parco auto.
+ *
+ * @param hashTable il parco auto a cui si vuole aggiungere la stazione.
+ * @param autonomia l'autonomia della macchina da aggiungere.
+ */
+void inserisciNelParcoAuto(struct HashTable *hashTable, int autonomia){
+    /**
+     * Indice in cui si dovrà aggiungere la macchina.
+     */
+    int indice= parcoAutoHash(autonomia);
+    /**
+     * Creazione nodo da aggiungere alla HashTable.
+     */
+    struct HashNode *nuovaMacchina=(struct HashNode *) malloc(sizeof(struct HashNode));
+    nuovaMacchina->autonomia=autonomia; //salvataggio autonomia
+    nuovaMacchina->successivo=hashTable->table[indice]; //salvataggio nodo successivo nella stessa posizione della HashTable
+
+    //aggiunta nodo alla HashTable
+    hashTable->table[indice]=nuovaMacchina;
+}
+
+/**
+ * Ricerca di una macchina nella HashTable.
+ *
+ * @param hashTable il parco auto in cui si vuole cercare la macchina.
+ * @param autonomia l'autonomia della macchina da cercare.
+ * @return la macchina cercata oppure NULL.
+ */
+struct HashNode *cercaAuto(struct HashTable *hashTable, int autonomia){
+    /**
+     * Indice in sui si trova la macchina richiesta.
+     */
+    int indice= parcoAutoHash(autonomia);
+    /**
+     * Nodo corrente.
+     */
+    struct HashNode *corrente=hashTable->table[indice];
+
+    //fino a che non ci sono più macchine nel nodo
+    while(corrente!=NULL){
+        //abbiamo trovato la macchina?
+        if(corrente->autonomia==autonomia){
+            return corrente;
+        }
+        //guardiamo la macchina successiva nella lista
+        else{
+            corrente=corrente->successivo;
+        }
+    }
+
+    //macchina NON trovata
+    return NULL;
+}
+
+void eliminaAuto(struct HashTable *hashTable, int autonomia){
+    /**
+     * Indice in sui si trova la macchina richiesta.
+     */
+    int indice= parcoAutoHash(autonomia);
+    /**
+     * Nodo corrente.
+     */
+    struct HashNode *corrente=hashTable->table[indice];
+    /**
+     * Nodo precedente rispetto a quello corrente.
+     */
+    struct HashNode *precedente=NULL;
+
+    //ricerca nodo con la chiave corrispondente
+    while (corrente!=NULL && corrente->autonomia!=autonomia){
+        precedente=corrente;
+        corrente=corrente->successivo;
+    }
+
+    //nodo NON è stato trovato
+    if(corrente==NULL){
+        //nodo NON è stato trovato
+        return;
+    }
+    //nodo è stato trovato
+    else{
+        //il nodo da eliminare è il primo
+        if(precedente==NULL){
+            hashTable->table[indice]=corrente->successivo;
+        }
+        //il nodo da eliminare si trova in mezzo alla lista
+        else{
+            precedente->successivo=corrente->successivo;
+        }
+    }
+
+    //dealloco il nodo
+    free(corrente);
+
+    //riduco numero di elementi nella HashTable
+
+}
 
 
 
@@ -249,8 +434,6 @@ int main() {
     char comando[LUNGHEZZA_MAX_COMANDI]="";
 
 
-
-
     //continua a leggere fino a che non leggi EOF
     do{
         //leggi i comandi che arrivano da stIN
@@ -262,15 +445,6 @@ int main() {
 
 
     }while(fine!=EOF); //se leggi EOF termina
-
-
-
-
-
-
-
-    //TODO da togliere
-    printf("Hello, World!\n");
 
     return 0;
 
