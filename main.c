@@ -35,39 +35,6 @@
 
 //STRUCT
 /**
- * Struct --> Rappresenta un nodo di una HashTable.
- */
-struct HashNode{
-    /**
-     * Chiave.
-     */
-    unsigned int chiave;
-    /**
-     * Nodo successivo nella stessa posizione della HashTable.
-     */
-    struct HashNode *successivo;
-};
-
-/**
- * Struct --> Rappresenta la HashTable.
- */
-struct HashTable{
-    /**
-     * Tabella di Hash.
-     */
-    struct HashNode **table;
-    /**
-     * Numero di elementi nella HashTable.
-     */
-    unsigned int dimensione;
-    /**
-     * Capacità massima della HastTable, poi andra reallocata.
-     */
-    unsigned int capacita;
-};
-
-
-/**
  * Struct --> Rappresenta una macchina.
  */
 struct HashNodeAuto{
@@ -171,230 +138,6 @@ unsigned int funzioneDiHash(unsigned int chiave, unsigned int capacita){
  */
 unsigned int nuovaCapacita(unsigned int capacitaIniziale){
     return capacitaIniziale*2+11;
-}
-
-/**
- * Inizializzazione della HashTable.
- *
- * @param capacita la dimensione iniziale della HashTable.
- * @return la HasTable inizializzata.
- */
-struct HashTable *inizializzazioneHashTable(unsigned int capacita){
-    /**
-     * Nuova HashTable.
-     */
-    struct HashTable *hashTable=(struct HashTable *) malloc(sizeof(struct HashTable));
-
-    //inizializza valori
-    hashTable->dimensione=0;
-    hashTable->capacita=capacita;
-    hashTable->table=(struct HashNode **) calloc(hashTable->capacita, sizeof(struct HashNode *));
-
-    //ritorna la HashTable inizializzata
-    return hashTable;
-}
-
-/**
- * Reinizializza la HashTable --> da una HashTable già esistente la realloca in un'altra con capacità maggiore
- *
- * @param hashTable la HashTable da reinizializzare.
- */
-void reHashTable(struct HashTable *hashTable){
-    /**
-     * Nuova capacità della HashTable.
-     */
-    unsigned int capacitaNuova= nuovaCapacita(hashTable->capacita);
-    /**
-     * Nuovo indice in cui spostare gli HashNode dalla HashTable vecchia a quella nuova.
-     */
-    unsigned int nuovoIndice=0;
-    /**
-     * Nuova HashTable.
-     */
-    struct HashNode **nuovaHashTable=(struct HashNode **) calloc(capacitaNuova, sizeof(struct HashNode *));
-    /**
-    * Nodo della HashTable corrente.
-    */
-    struct HashNode *corrente=NULL;
-    /**
-     * Nodo successivo da vedere.
-     */
-    struct HashNode *prossimo=NULL;
-
-
-    //spostiamo dalla vecchia HashTable a quella nuova
-    for (int i = 0; i < hashTable->capacita; ++i) {
-        corrente=hashTable->table[i];
-
-        //fino a che NON abbiamo finito di spostare tutte le HashNode
-        while(corrente!=NULL){
-            //salviamo il prossimo HashNode da visitare
-            prossimo=corrente->successivo;
-            //salviamo il nuovo indice in cui andare a mettere la HashNode corrente
-            nuovoIndice= funzioneDiHash(corrente->chiave, capacitaNuova);
-
-            //spostiamo il nodo
-            corrente->successivo=nuovaHashTable[nuovoIndice];
-            nuovaHashTable[nuovoIndice]=corrente;
-            //il nodo corrente da vedere diventa il prossimo
-            corrente=prossimo;
-        }
-    }
-
-    //eliminiamo la vecchia table
-    free(hashTable->table);
-    //aggiungiamo la nuova table
-    hashTable->table=nuovaHashTable;
-    //aggiorniamo la capacità
-    hashTable->capacita=capacitaNuova;
-}
-
-/**
- * Inserimento in una HashTable di un HashNode.
- *
- * @param hashTable la HashTable alla quale va aggiunto il nodo.
- * @param chiave la chiave da aggiungere alla HashTable.
- */
-void inserimentoNellaHashTable(struct HashTable *hashTable, unsigned int chiave){
-    /**
-     * Indice in cui inserire la chiave.
-     */
-    unsigned int indice= funzioneDiHash(chiave, hashTable->capacita);
-    /**
-     * Nuovo HashNode da inserire nella HashTable.
-     */
-    struct HashNode *nuovoNodo=(struct HashNode *) malloc(sizeof(struct HashNode));
-
-
-    //inserimento valori nel nuovo HashNode
-    nuovoNodo->chiave=chiave;
-    nuovoNodo->successivo=hashTable->table[indice];
-    hashTable->table[indice]=nuovoNodo;
-    //è stato aggiunto un nuovo nodo, questo implica che bisogna aumentare la dimensione della HashTable
-    hashTable->dimensione++;
-
-    //bisogna reallocare la HashTable
-    if(hashTable->dimensione > hashTable->capacita*PERCENTUALE_REALLOC){
-        reHashTable(hashTable);
-    }
-}
-
-/**
- * Ricerca di una chiave nella HashTable.
- *
- * @param hashTable la HashTable nella quale dobbiamo eseguire la ricerca.
- * @param chiave la chiave da cercare.
- * @return il HashNode che contiene la chiave di interesse
- */
-struct HashNode *ricercaHashNode(struct HashTable *hashTable, unsigned int chiave){
-    /**
-     * Indice nel quale si trova la chiave.
-     */
-    unsigned int indice= funzioneDiHash(chiave, hashTable->capacita);
-    /**
-     * HashNode corrente.
-     */
-    struct HashNode *corrente=hashTable->table[indice];
-
-    //fino a che ci sono altri HashNode nella posizione richiesta
-    while(corrente!=NULL){
-        //abbiamo trovato la chiave
-        if(corrente->chiave==chiave){
-            return corrente;
-        }
-        //guardiamo nel prossimo HashNode
-        else{
-            corrente=corrente->successivo;
-        }
-    }
-
-    //NON abbiamo trovato la chiave --> corrente=NULL
-    return corrente;
-}
-
-/**
- * Ricerca esistenza chiave nella HashTable.
- *
- * @param hashTable la HashTable nella quale dobbiamo eseguire la ricerca.
- * @param chiave la chiave da cercare.
- * @return 1 se la chiave è presente, 0 se NON è presente.
- */
-unsigned int esisteChiaveNellaHashTable(struct HashTable *hashTable, unsigned int chiave){
-    /**
-     * Indice nel quale si trova la chiave.
-     */
-    unsigned int indice= funzioneDiHash(chiave, hashTable->capacita);
-    /**
-     * HashNode corrente.
-     */
-    struct HashNode *corrente=hashTable->table[indice];
-
-
-    //fino a che ci sono altri HashNode nella posizione richiesta
-    while(corrente!=NULL){
-        //abbiamo trovato la chiave
-        if(corrente->chiave==chiave){
-            return 1;
-        }
-            //guardiamo nel prossimo HashNode
-        else{
-            corrente=corrente->successivo;
-        }
-    }
-
-    //NON abbiamo trovato la chiave
-    return 0;
-}
-
-/**
- * Elimina la chiave dalla HashTable.
- *
- * @param hashTable la HashTable nella quale dobbiamo eliminare una chiave.
- * @param chiave la chiave da eliminare.
- */
-void eliminaHashNode(struct HashTable *hashTable, unsigned int chiave){
-    /**
-     * Indice nel quale si trova la chiave.
-     */
-    unsigned int indice= funzioneDiHash(chiave, hashTable->capacita);
-    /**
-     * Nodo corrente,
-     * corrente=corrente->successivo.
-     */
-    struct HashNode *corrente=hashTable->table[indice];
-    /**
-     * Nodo precedente,
-     * precedente=corrente.
-     */
-    struct HashNode *precedente=NULL;
-
-
-    //trova il nodo con la chiave corrispondente, assegna corrente AND precedente
-    while (corrente!=NULL && corrente->chiave!=chiave){
-        precedente=corrente;
-        corrente=corrente->successivo;
-    }
-
-    //chiave NON trovata
-    if(corrente==NULL){
-        return;
-    }
-    //chiave trovata
-    else{
-        //il nodo da eliminare è il primo della lista presente nella posizione indicata
-        if(precedente==NULL){
-            hashTable->table[indice]=corrente->successivo;
-        }
-        //il nodo da eliminare NON è il primo della lista presente nella posizione indicate
-        else{
-            precedente->successivo=corrente->successivo;
-        }
-    }
-
-    //dealloca il HashNode
-    free(corrente);
-    //riduciamo il numero di elementi presenti nella HashTable
-    hashTable->dimensione--;
 }
 
 
@@ -591,6 +334,39 @@ int ricercaAuto(struct HashTableParcoAuto *parcoAuto, unsigned int autonomia){
     return 0;
 }
 
+/**
+ * Ricerca l'autonomia massima nel parco auto richiesto.
+ *
+ * @param parcoAuto il parco auto d'interesse.
+ * @param dimensioneMassima la dimensione che ha il parco auto - capacità attuale.
+ * @return l'autonomia massima presente nel parco auto.
+ */
+unsigned int ricercaMassimaAutonomia(struct HashTableParcoAuto *parcoAuto, unsigned int dimensioneMassima){
+    /**
+     * Valore massimo da ritornare.
+     */
+    unsigned int massimo=0;
+    /**
+     * HashNode corrente.
+     */
+    struct HashNodeAuto *corrente=NULL;
+
+    //per tutta la dimensione della HashTable
+    for (int i = 0; i < dimensioneMassima; ++i) {
+        corrente=parcoAuto->table[i];
+        //controllo tutta la lista presente nella posizione
+        while (corrente!=NULL){
+            //se corrente è maggiore del massimo modificalo
+            if(corrente->autonomia>massimo){
+                massimo=corrente->autonomia;
+            }
+            corrente=corrente->successivo;
+        }
+    }
+
+    return massimo;
+}
+
 
 
 //GESTIONE AUTOSTRADA
@@ -677,7 +453,7 @@ void reHashAutostrada(struct HashTableAutostrada *htAutostrada){
  * @param distanza la distanza a cui si trova la stazione che vogliamo aggiungere.
  * @param parcoAuto il parco auto contenuto nella stazione indicata.
  */
-void aggiungiStazione(struct HashTableAutostrada *htAutostrada, unsigned int distanza, struct HashTableParcoAuto *parcoAuto){
+void aggiungiStazione(struct HashTableAutostrada *htAutostrada, unsigned int distanza, struct HashTableParcoAuto *parcoAuto, unsigned int maxAutonomia){
     /**
      * Indice in cui inserire la chiave.
      */
@@ -691,6 +467,7 @@ void aggiungiStazione(struct HashTableAutostrada *htAutostrada, unsigned int dis
     //inserimento valori nel nuovo HashNode
     nuovoNodo->distanza=distanza;
     nuovoNodo->parcoAuto=parcoAuto;
+    nuovoNodo->autonomiaMassima=maxAutonomia;
     nuovoNodo->successivo=htAutostrada->table[indice];
     htAutostrada->table[indice]=nuovoNodo;
     //è stato aggiunto un nuovo nodo, questo implica che bisogna aumentare la dimensione della HashTable
@@ -770,7 +547,7 @@ struct HashNodeStazione *ricercaStazione(struct HashTableAutostrada *htAutostrad
         if(corrente->distanza==distanza){
             return corrente;
         }
-            //guardiamo nel prossimo HashNode
+        //guardiamo nel prossimo HashNode
         else{
             corrente=corrente->successivo;
         }
@@ -839,6 +616,10 @@ void AggiungiStazione(){
      * Parco auto della stazione.
      */
     struct HashTableParcoAuto *parcoAuto=NULL;
+    /**
+     * Autonomia massima presente nel parco auto.
+     */
+    unsigned int maxAutonomia=0;
 
 
     //lettura distanza della stazione da aggiungere
@@ -861,11 +642,18 @@ void AggiungiStazione(){
         for (int i = 0; i < numeroAuto; ++i) {
             //leggi chiave auto da aggiungere al parco auto
             scanf("%d", &autonomiaAuto);
+
+            //salviamo il valore massimo di autonomia
+            if(autonomiaAuto>maxAutonomia){
+                maxAutonomia=autonomiaAuto;
+            }
+
             //aggiungi autonomiaAuto al parco auto sopra creato
             aggiungiAuto(parcoAuto, autonomiaAuto);
         }
+
         //aggiunta la stazione
-        aggiungiStazione(autostrada, distanza, parcoAuto);
+        aggiungiStazione(autostrada, distanza, parcoAuto, maxAutonomia);
 
         //la stazione è stata aggiunta
         printf("aggiunta");
@@ -884,6 +672,10 @@ void AggiungiAuto(){
      * Autonomia dell'auto da aggiungere alla stazione
      */
     unsigned int autonomiaAutoDaAggiungere=0;
+    /**
+     * Stazione di interesse.
+     */
+    struct HashNodeStazione *stazione= ricercaStazione(autostrada, distanzaStazione);
 
 
     //lettura distanzaStazione della stazione a cui aggiungere una macchina
@@ -899,8 +691,13 @@ void AggiungiAuto(){
         //leggi chiave auto da aggiungere
         scanf("%d", &autonomiaAutoDaAggiungere);
 
+        //distanza massima percorribile da quella stazione
+        if(stazione->autonomiaMassima<autonomiaAutoDaAggiungere){
+            stazione->autonomiaMassima=autonomiaAutoDaAggiungere;
+        }
+
         //aggiungi auto al praco auto della stazione
-        aggiungiAuto(ricercaStazione(autostrada, distanzaStazione)->parcoAuto, autonomiaAutoDaAggiungere);
+        aggiungiAuto(stazione->parcoAuto, autonomiaAutoDaAggiungere);
 
         //auto aggiunta la parco auto
         printf("aggiunta");
@@ -964,7 +761,6 @@ void RottamaAuto(){
         //leggi chiave auto da rottamare
         scanf("%d", &autonomiaAutoDaRottamare);
 
-        //TODO if
         //Se auto NON presente nel parco auto della stazione
         if(ricercaAuto(stazione->parcoAuto, autonomiaAutoDaRottamare)==0){
             //auto NON rottamata
@@ -972,6 +768,10 @@ void RottamaAuto(){
         }
         //auto presente nel parco auto della stazione
         else{
+            //salviamo la nuova autonomia massima
+            stazione->autonomiaMassima= ricercaMassimaAutonomia(stazione->parcoAuto, stazione->parcoAuto->capacita);
+
+            //eliminiamo l'auto dal parco auto della stazione
             eliminaAuto(stazione->parcoAuto, autonomiaAutoDaRottamare);
             //auto rottamata
             printf("rottamata");
@@ -996,12 +796,17 @@ void PianificaPercorso(){
     scanf("%d", &distanzaStazionePartenza);
     scanf("%d", &distanzaStazioneArrivo);
 
+    //TODO capire se effettivamente le stazioni di partenza e di arrivo esistono sempre
     //Se stazione partenza NON esiste
     if(StazioneGiaPresente(autostrada, distanzaStazionePartenza)==0){
         printf("nessun percorso");
     }
     //se stazione arrivo NON esiste
     else if(StazioneGiaPresente(autostrada, distanzaStazioneArrivo)==0){
+        printf("nessun percorso");
+    }
+    //stazione di partenza NON ha macchine
+    else if(ricercaStazione(autostrada, distanzaStazionePartenza)->autonomiaMassima==0){
         printf("nessun percorso");
     }
     //se stazione partenza == stazione arrivo
@@ -1045,14 +850,12 @@ void ProcessaComando(const char comando[]){
             PianificaPercorso();
             break;
     }
-
 }
 
 
 
 //MAIN
 int main() {
-
     /**
      * Carattere per capire non abbiamo più niente da leggere da stIN.
      */
@@ -1077,5 +880,4 @@ int main() {
     }while(fine!=EOF); //se leggi EOF termina
 
     return 0;
-
 }
