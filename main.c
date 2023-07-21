@@ -1,8 +1,11 @@
+//Alessandro Conti
+
 #include <stdio.h>
 #include <stdlib.h>
 
 
 
+//DEFINE
 /**
  * Define --> Lunghezza massima che un comando può assumere.
  */
@@ -30,6 +33,7 @@
 
 
 
+//STRUCT
 /**
  * Struct --> Rappresenta un nodo di una HashTable.
  */
@@ -64,6 +68,7 @@ struct HashTable{
 
 
 
+//GESTIONE HASH
 /**
  * Funzione di hash --> ritorna la posizione dato il valore richiesto.
  *
@@ -313,10 +318,31 @@ void eliminaHashNode(struct HashTable *hashTable, int chiave){
 
 
 
+//GESTIONE PARCO AUTO
+/**
+ * Creazione del parco auto.
+ *
+ * @param capacitaIniziale la capacità iniziale del parco auto.
+ * @return il parco auto creato.
+ */
+struct HashTable *creaParcoAuto(int capacitaIniziale){
+    return inizializzazioneHashTable(capacitaIniziale);
+}
+
+/**
+ * Aggiungi auto al parco auto richiesto.
+ *
+ * @param parcoAuto il parco auto richiesto.
+ * @param autonomia l'autonomia dell'auto da aggiungere al parco auto.
+ */
+void aggiungiAuto(struct HashTable *parcoAuto, int autonomia){
+    //inserimento dell'auto nel parco auto
+    inserimentoNellaHashTable(parcoAuto, autonomia);
+}
 
 
 
-
+//GESTIONE STAZIONE
 /**
  * Ritorna 1 se la stazione esiste sull'autostrada.
  *
@@ -335,23 +361,27 @@ int StazioneGiaPresente(int distanza){
 
 
 
-
+//GESTIONE COMANDI
 /**
  * Aggiungi stazione all'autostrada.
  */
 void AggiungiStazione(){
     /**
-     * Distanza dall'origine  della stazione
+     * Distanza dall'origine  della stazione.
      */
     int distanza=0;
     /**
-     * Numero di auto da aggiungere alla stazione
+     * Numero di auto da aggiungere alla stazione.
      */
     int numeroAuto=0;
     /**
-     * Autonomia dell'auto da aggiungere alla stazione
+     * Autonomia dell'auto da aggiungere alla stazione.
      */
     int autonomiaAuto=0;
+    /**
+     * Parco auto della stazione.
+     */
+    struct HashTable *parcoAuto=NULL;
 
 
     //lettura distanza della stazione da aggiungere
@@ -366,14 +396,17 @@ void AggiungiStazione(){
         //leggi numero di macchine che bisogna aggiungere alla stazione
         scanf("%d", &numeroAuto);
 
-        //TODO crea parco auto di dimensione numeroAuto
+        //crea il parco auto
+        parcoAuto= creaParcoAuto(DIMENSIONE_INIZIALE_PARCO_AUTO);
 
         //aggiungi auto con la loro chiave al parco auto
         for (int i = 0; i < numeroAuto; ++i) {
             //leggi chiave auto da aggiungere al parco auto
             scanf("%d", &autonomiaAuto);
-            //TODO aggiungi autonomiaAuto al parco auto sopra creato
+            //aggiungi autonomiaAuto al parco auto sopra creato
+            aggiungiAuto(parcoAuto, autonomiaAuto);
         }
+        //TODO aggiungi stazione all'autostrada
         printf("aggiunta");
     }
 }
@@ -501,8 +534,6 @@ void PianificaPercorso(){
     }
 }
 
-
-
 /**
  * Eseguire il comando letto da stIN.
  *
@@ -539,6 +570,7 @@ void ProcessaComando(const char comando[]){
 
 
 
+//MAIN
 int main() {
 
     /**
