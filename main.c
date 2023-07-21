@@ -41,7 +41,7 @@ struct HashNode{
     /**
      * Chiave.
      */
-    int chiave;
+    unsigned int chiave;
     /**
      * Nodo successivo nella stessa posizione della HashTable.
      */
@@ -59,12 +59,21 @@ struct HashTable{
     /**
      * Numero di elementi nella HashTable.
      */
-    int dimensione;
+    unsigned int dimensione;
     /**
      * Capacità massima della HastTable, poi andra reallocata.
      */
-    int capacita;
+    unsigned int capacita;
 };
+//TODO per l'autostrada --> vanno create le stazioni che contengono distanza e parco auto
+
+
+
+//VARIABILI GLOBALI
+/**
+ * Autostrada.
+ */
+struct HashTable *autostrada=NULL;
 
 
 
@@ -88,7 +97,7 @@ unsigned int funzioneDiHash(unsigned int chiave, unsigned int capacita){
  * @param capacitaIniziale capacità iniziale della HashTable.
  * @return la nuova capacità della HashTable.
  */
-int nuovaCapacita(int capacitaIniziale){
+unsigned int nuovaCapacita(unsigned int capacitaIniziale){
     return capacitaIniziale*2+11;
 }
 
@@ -98,7 +107,7 @@ int nuovaCapacita(int capacitaIniziale){
  * @param capacita la dimensione iniziale della HashTable.
  * @return la HasTable inizializzata.
  */
-struct HashTable *inizializzazioneHashTable(int capacita){
+struct HashTable *inizializzazioneHashTable(unsigned int capacita){
     /**
      * Nuova HashTable.
      */
@@ -122,11 +131,11 @@ void reHashTable(struct HashTable *hashTable){
     /**
      * Nuova capacità della HashTable.
      */
-    int capacitaNuova= nuovaCapacita(hashTable->capacita);
+    unsigned int capacitaNuova= nuovaCapacita(hashTable->capacita);
     /**
      * Nuovo indice in cui spostare gli HashNode dalla HashTable vecchia a quella nuova.
      */
-    int nuovoIndice=0;
+    unsigned int nuovoIndice=0;
     /**
      * Nuova HashTable.
      */
@@ -174,11 +183,11 @@ void reHashTable(struct HashTable *hashTable){
  * @param hashTable la HashTable alla quale va aggiunto il nodo.
  * @param chiave la chiave da aggiungere alla HashTable.
  */
-void inserimentoNellaHashTable(struct HashTable *hashTable, int chiave){
+void inserimentoNellaHashTable(struct HashTable *hashTable, unsigned int chiave){
     /**
      * Indice in cui inserire la chiave.
      */
-    int indice= funzioneDiHash(chiave, hashTable->capacita);
+    unsigned int indice= funzioneDiHash(chiave, hashTable->capacita);
     /**
      * Nuovo HashNode da inserire nella HashTable.
      */
@@ -205,11 +214,11 @@ void inserimentoNellaHashTable(struct HashTable *hashTable, int chiave){
  * @param chiave la chiave da cercare.
  * @return il HashNode che contiene la chiave di interesse
  */
-struct HashNode *ricercaHashNode(struct HashTable *hashTable, int chiave){
+struct HashNode *ricercaHashNode(struct HashTable *hashTable, unsigned int chiave){
     /**
      * Indice nel quale si trova la chiave.
      */
-    int indice= funzioneDiHash(chiave, hashTable->capacita);
+    unsigned int indice= funzioneDiHash(chiave, hashTable->capacita);
     /**
      * HashNode corrente.
      */
@@ -238,11 +247,11 @@ struct HashNode *ricercaHashNode(struct HashTable *hashTable, int chiave){
  * @param chiave la chiave da cercare.
  * @return 1 se la chiave è presente, 0 se NON è presente.
  */
-int esisteChiaveNellaHashTable(struct HashTable *hashTable, int chiave){
+unsigned int esisteChiaveNellaHashTable(struct HashTable *hashTable, unsigned int chiave){
     /**
      * Indice nel quale si trova la chiave.
      */
-    int indice= funzioneDiHash(chiave, hashTable->capacita);
+    unsigned int indice= funzioneDiHash(chiave, hashTable->capacita);
     /**
      * HashNode corrente.
      */
@@ -271,11 +280,11 @@ int esisteChiaveNellaHashTable(struct HashTable *hashTable, int chiave){
  * @param hashTable la HashTable nella quale dobbiamo eliminare una chiave.
  * @param chiave la chiave da eliminare.
  */
-void eliminaHashNode(struct HashTable *hashTable, int chiave){
+void eliminaHashNode(struct HashTable *hashTable, unsigned int chiave){
     /**
      * Indice nel quale si trova la chiave.
      */
-    int indice= funzioneDiHash(chiave, hashTable->capacita);
+    unsigned int indice= funzioneDiHash(chiave, hashTable->capacita);
     /**
      * Nodo corrente,
      * corrente=corrente->successivo.
@@ -325,7 +334,7 @@ void eliminaHashNode(struct HashTable *hashTable, int chiave){
  * @param capacitaIniziale la capacità iniziale del parco auto.
  * @return il parco auto creato.
  */
-struct HashTable *creaParcoAuto(int capacitaIniziale){
+struct HashTable *creaParcoAuto(unsigned int capacitaIniziale){
     return inizializzazioneHashTable(capacitaIniziale);
 }
 
@@ -335,7 +344,7 @@ struct HashTable *creaParcoAuto(int capacitaIniziale){
  * @param parcoAuto il parco auto richiesto.
  * @param autonomia l'autonomia dell'auto da aggiungere al parco auto.
  */
-void aggiungiAuto(struct HashTable *parcoAuto, int autonomia){
+void aggiungiAuto(struct HashTable *parcoAuto, unsigned int autonomia){
     //inserimento dell'auto nel parco auto
     inserimentoNellaHashTable(parcoAuto, autonomia);
 }
@@ -349,7 +358,7 @@ void aggiungiAuto(struct HashTable *parcoAuto, int autonomia){
  * @param distanza distanza in cui si trova la stazione di interesse.
  * @return 1 se la stazione esiste sull'autostrada, 0 altrimenti
  */
-int StazioneGiaPresente(int distanza){
+int StazioneGiaPresente(unsigned int distanza){
     //TODO da fare
     if(distanza==1)
         return 1;
@@ -367,17 +376,17 @@ int StazioneGiaPresente(int distanza){
  */
 void AggiungiStazione(){
     /**
-     * Distanza dall'origine  della stazione.
+     * Distanza dall'origine della stazione.
      */
-    int distanza=0;
+    unsigned int distanza=0;
     /**
      * Numero di auto da aggiungere alla stazione.
      */
-    int numeroAuto=0;
+    unsigned int numeroAuto=0;
     /**
      * Autonomia dell'auto da aggiungere alla stazione.
      */
-    int autonomiaAuto=0;
+    unsigned int autonomiaAuto=0;
     /**
      * Parco auto della stazione.
      */
@@ -584,6 +593,9 @@ int main() {
     char comando[LUNGHEZZA_MAX_COMANDI]="";
 
 
+    //inizializzazione autostrada
+    autostrada= inizializzazioneHashTable(DIMENSIONE_INIZIALE_AUTOSTRADA);
+
     //continua a leggere fino a che non leggi EOF
     do{
         //leggi i comandi che arrivano da stIN
@@ -591,9 +603,6 @@ int main() {
 
         //processa il comando letto
         ProcessaComando(comando);
-
-
-
     }while(fine!=EOF); //se leggi EOF termina
 
     return 0;
