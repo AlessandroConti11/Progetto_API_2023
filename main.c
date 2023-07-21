@@ -557,6 +557,13 @@ void eliminaAuto(struct HashTableParcoAuto *parcoAuto, unsigned int autonomia){
     parcoAuto->dimensione--;
 }
 
+/**
+ * Ricerca l'auto richiesta nel parco auto.
+ *
+ * @param parcoAuto il parco auto che contiene la macchina da ricercare.
+ * @param autonomia l'autonomia della macchina da ricercare.
+ * @return 1 se la macchina è presente nel parco auto, 0 se NON è presente.
+ */
 int ricercaAuto(struct HashTableParcoAuto *parcoAuto, unsigned int autonomia){
     /**
      * Indice nel quale si trova la chiave.
