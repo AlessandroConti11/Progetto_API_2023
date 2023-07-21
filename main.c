@@ -65,7 +65,79 @@ struct HashTable{
      */
     unsigned int capacita;
 };
-//TODO per l'autostrada --> vanno create le stazioni che contengono distanza e parco auto
+
+
+/**
+ * Struct --> Rappresenta una macchina.
+ */
+struct HashNodeAuto{
+    /**
+     * Autonomia dell'auto.
+     */
+    unsigned int autonomia;
+    /**
+     * Nodo successivo nella stessa posizione della HashTable.
+     */
+    struct HashNodeAuto *successivo;
+};
+
+/**
+ * Struct --> Rappresenta il parco auto.
+ */
+struct HashTableParcoAuto{
+    /**
+     * Parco auto.
+     */
+    struct HashNodeAuto **table;
+    /**
+     * Numero di elementi nella HashTable.
+     */
+    unsigned int dimensione;
+    /**
+     * Capacità massima della HastTable, poi andra reallocata.
+     */
+    unsigned int capacita;
+};
+
+/**
+ * Struct --> Rappresenta una stazione.
+ */
+struct HashNodeStazione{
+    /**
+     * Distanza dall'origine in cui si trova la stazione.
+     */
+    unsigned int distanza;
+    /**
+     * Parco auto.
+     */
+    struct HashTableParcoAuto *parcoAuto;
+    /**
+     * Autonomia massima dell'auto presente nel parco auto della stazione.
+     */
+    unsigned int autonomiaMassima;
+    /**
+     * Nodo successivo nella stessa posizione della HashTable.
+     */
+    struct HashNodeStazione *successivo;
+};
+
+/**
+ * Struct --> Rappresenta l'autostrada.
+ */
+struct HashTableAutostrada{
+    /**
+     * Parco auto.
+     */
+    struct HashNodeStazione **table;
+    /**
+     * Numero di elementi nella HashTable.
+     */
+    unsigned int dimensione;
+    /**
+     * Capacità massima della HastTable, poi andra reallocata.
+     */
+    unsigned int capacita;
+};
 
 
 
@@ -73,7 +145,7 @@ struct HashTable{
 /**
  * Autostrada.
  */
-struct HashTable *autostrada=NULL;
+struct HashTableAutostrada *autostrada=NULL;
 
 
 
@@ -334,8 +406,74 @@ void eliminaHashNode(struct HashTable *hashTable, unsigned int chiave){
  * @param capacitaIniziale la capacità iniziale del parco auto.
  * @return il parco auto creato.
  */
-struct HashTable *creaParcoAuto(unsigned int capacitaIniziale){
-    return inizializzazioneHashTable(capacitaIniziale);
+struct HashTableParcoAuto *creaParcoAuto(unsigned int capacitaIniziale){
+    /**
+     * Nuova HashTable.
+     */
+    struct HashTableParcoAuto *hashTable=(struct HashTableParcoAuto *) malloc(sizeof(struct HashTableParcoAuto));
+
+    //inizializza valori
+    hashTable->dimensione=0;
+    hashTable->capacita=capacitaIniziale;
+    hashTable->table=(struct HashNodeAuto **) calloc(hashTable->capacita, sizeof(struct HashNodeAuto *));
+
+    //ritorna la HashTable inizializzata
+    return hashTable;
+}
+
+/**
+ * Reinizializza il parco auto --> da una HashTable già esistente la realloca in un'altra con capacità maggiore.
+ *
+ * @param parcoAuto il parco auto da reallocare.
+ */
+void reHashParcoAuto(struct HashTableParcoAuto *parcoAuto){
+    /**
+     * Nuova capacità della HashTable.
+     */
+    unsigned int capacitaNuova= nuovaCapacita(parcoAuto->capacita);
+    /**
+     * Nuovo indice in cui spostare gli HashNode dalla HashTable vecchia a quella nuova.
+     */
+    unsigned int nuovoIndice=0;
+    /**
+     * Nuova HashTable.
+     */
+    struct HashNodeAuto **nuovaHashTable=(struct HashNodeAuto **) calloc(capacitaNuova, sizeof(struct HashNodeAuto *));
+    /**
+    * Nodo della HashTable corrente.
+    */
+    struct HashNodeAuto *corrente=NULL;
+    /**
+     * Nodo successivo da vedere.
+     */
+    struct HashNodeAuto *prossimo=NULL;
+
+
+    //spostiamo dalla vecchia HashTable a quella nuova
+    for (int i = 0; i < parcoAuto->capacita; ++i) {
+        corrente=parcoAuto->table[i];
+
+        //fino a che NON abbiamo finito di spostare tutte le HashNode
+        while(corrente!=NULL){
+            //salviamo il prossimo HashNode da visitare
+            prossimo=corrente->successivo;
+            //salviamo il nuovo indice in cui andare a mettere la HashNode corrente
+            nuovoIndice= funzioneDiHash(corrente->autonomia, capacitaNuova);
+
+            //spostiamo il nodo
+            corrente->successivo=nuovaHashTable[nuovoIndice];
+            nuovaHashTable[nuovoIndice]=corrente;
+            //il nodo corrente da vedere diventa il prossimo
+            corrente=prossimo;
+        }
+    }
+
+    //eliminiamo la vecchia table
+    free(parcoAuto->table);
+    //aggiungiamo la nuova table
+    parcoAuto->table=nuovaHashTable;
+    //aggiorniamo la capacità
+    parcoAuto->capacita=capacitaNuova;
 }
 
 /**
@@ -344,24 +482,327 @@ struct HashTable *creaParcoAuto(unsigned int capacitaIniziale){
  * @param parcoAuto il parco auto richiesto.
  * @param autonomia l'autonomia dell'auto da aggiungere al parco auto.
  */
-void aggiungiAuto(struct HashTable *parcoAuto, unsigned int autonomia){
-    //inserimento dell'auto nel parco auto
-    inserimentoNellaHashTable(parcoAuto, autonomia);
+void aggiungiAuto(struct HashTableParcoAuto *parcoAuto, unsigned int autonomia){
+    /**
+     * Indice in cui inserire la chiave.
+     */
+    unsigned int indice= funzioneDiHash(autonomia, parcoAuto->capacita);
+    /**
+     * Nuovo HashNode da inserire nella HashTable.
+     */
+    struct HashNodeAuto *nuovoNodo=(struct HashNodeAuto *) malloc(sizeof(struct HashNodeAuto));
+
+
+    //inserimento valori nel nuovo HashNode
+    nuovoNodo->autonomia=autonomia;
+    nuovoNodo->successivo=parcoAuto->table[indice];
+    parcoAuto->table[indice]=nuovoNodo;
+    //è stato aggiunto un nuovo nodo, questo implica che bisogna aumentare la dimensione della HashTable
+    parcoAuto->dimensione++;
+
+    //bisogna reallocare la HashTable
+    if(parcoAuto->dimensione > parcoAuto->capacita*PERCENTUALE_REALLOC){
+        reHashParcoAuto(parcoAuto);
+    }
+}
+
+/**
+ * Elimina l'auto richiesta dal parco auto.
+ *
+ * @param parcoAuto il parco auto che contine la macchina da eliminare.
+ * @param autonomia la macchina da eliminare.
+ */
+void eliminaAuto(struct HashTableParcoAuto *parcoAuto, unsigned int autonomia){
+    /**
+     * Indice nel quale si trova la chiave.
+     */
+    unsigned int indice= funzioneDiHash(autonomia, parcoAuto->capacita);
+    /**
+     * Nodo corrente,
+     * corrente=corrente->successivo.
+     */
+    struct HashNodeAuto *corrente=parcoAuto->table[indice];
+    /**
+     * Nodo precedente,
+     * precedente=corrente.
+     */
+    struct HashNodeAuto *precedente=NULL;
+
+
+    //trova il nodo con la chiave corrispondente, assegna corrente AND precedente
+    while (corrente!=NULL && corrente->autonomia!=autonomia){
+        precedente=corrente;
+        corrente=corrente->successivo;
+    }
+
+    //chiave NON trovata
+    if(corrente==NULL){
+        return;
+    }
+        //chiave trovata
+    else{
+        //il nodo da eliminare è il primo della lista presente nella posizione indicata
+        if(precedente==NULL){
+            parcoAuto->table[indice]=corrente->successivo;
+        }
+            //il nodo da eliminare NON è il primo della lista presente nella posizione indicate
+        else{
+            precedente->successivo=corrente->successivo;
+        }
+    }
+
+    //dealloca il HashNode
+    free(corrente);
+    //riduciamo il numero di elementi presenti nella HashTable
+    parcoAuto->dimensione--;
+}
+
+int ricercaAuto(struct HashTableParcoAuto *parcoAuto, unsigned int autonomia){
+    /**
+     * Indice nel quale si trova la chiave.
+     */
+    unsigned int indice= funzioneDiHash(autonomia, parcoAuto->capacita);
+    /**
+     * HashNode corrente.
+     */
+    struct HashNodeAuto *corrente=parcoAuto->table[indice];
+
+
+    //fino a che ci sono altri HashNode nella posizione richiesta
+    while(corrente!=NULL){
+        //abbiamo trovato la chiave
+        if(corrente->autonomia==autonomia){
+            return 1;
+        }
+        //guardiamo nel prossimo HashNode
+        else{
+            corrente=corrente->successivo;
+        }
+    }
+
+    //NON abbiamo trovato la chiave
+    return 0;
 }
 
 
 
-//GESTIONE STAZIONE
+//GESTIONE AUTOSTRADA
+/**
+ * Creazione dell'autostrada.
+ *
+ * @param capacitaIniziale la capacità iniziale dell'autostrada.
+ * @return l'autostrada creata.
+ */
+struct HashTableAutostrada *creaAutostrada(unsigned int capacitaIniziale){
+    /**
+     * Nuova HashTable.
+     */
+    struct HashTableAutostrada *hashTable=(struct HashTableAutostrada *) malloc(sizeof(struct HashTableAutostrada));
+
+    //inizializza valori
+    hashTable->capacita=capacitaIniziale;
+    hashTable->dimensione=0;
+    hashTable->table=(struct HashNodeStazione **) calloc(hashTable->capacita, sizeof(struct HashNodeStazione *));
+
+    //ritorna la HashTable inizializzata
+    return hashTable;
+}
+
+/**
+ * Reinizializza il autostrada --> da una HashTable già esistente la realloca in un'altra con capacità maggiore.
+ *
+ * @param htAutostrada l'autostrada da reallocare.
+ */
+void reHashAutostrada(struct HashTableAutostrada *htAutostrada){
+    /**
+     * Nuova capacità della HashTable.
+     */
+    unsigned int capacitaNuova= nuovaCapacita(htAutostrada->capacita);
+    /**
+     * Nuovo indice in cui spostare gli HashNode dalla HashTable vecchia a quella nuova.
+     */
+    unsigned int nuovoIndice=0;
+    /**
+     * Nuova HashTable.
+     */
+    struct HashNodeStazione **nuovaHashTable=(struct HashNodeStazione **) calloc(capacitaNuova, sizeof(struct HashNodeStazione *));
+    /**
+    * Nodo della HashTable corrente.
+    */
+    struct HashNodeStazione *corrente=NULL;
+    /**
+     * Nodo successivo da vedere.
+     */
+    struct HashNodeStazione *prossimo=NULL;
+
+
+    //spostiamo dalla vecchia HashTable a quella nuova
+    for (int i = 0; i < htAutostrada->capacita; ++i) {
+        corrente=htAutostrada->table[i];
+
+        //fino a che NON abbiamo finito di spostare tutte le HashNode
+        while(corrente!=NULL){
+            //salviamo il prossimo HashNode da visitare
+            prossimo=corrente->successivo;
+            //salviamo il nuovo indice in cui andare a mettere la HashNode corrente
+            nuovoIndice= funzioneDiHash(corrente->distanza, capacitaNuova);
+
+            //spostiamo il nodo
+            corrente->successivo=nuovaHashTable[nuovoIndice];
+            nuovaHashTable[nuovoIndice]=corrente;
+            //il nodo corrente da vedere diventa il prossimo
+            corrente=prossimo;
+        }
+    }
+
+    //eliminiamo la vecchia table
+    free(htAutostrada->table);
+    //aggiungiamo la nuova table
+    htAutostrada->table=nuovaHashTable;
+    //aggiorniamo la capacità
+    htAutostrada->capacita=capacitaNuova;
+}
+
+/**
+ * Aggiungi stazione all'autostrada.
+ *
+ * @param htAutostrada l'autostrada a cui vanno aggiunte le stazioni.
+ * @param distanza la distanza a cui si trova la stazione che vogliamo aggiungere.
+ * @param parcoAuto il parco auto contenuto nella stazione indicata.
+ */
+void aggiungiStazione(struct HashTableAutostrada *htAutostrada, unsigned int distanza, struct HashTableParcoAuto *parcoAuto){
+    /**
+     * Indice in cui inserire la chiave.
+     */
+    unsigned int indice= funzioneDiHash(distanza, htAutostrada->capacita);
+    /**
+     * Nuovo HashNode da inserire nella HashTable.
+     */
+    struct HashNodeStazione *nuovoNodo=(struct HashNodeStazione *) malloc(sizeof(struct HashNodeStazione));
+
+
+    //inserimento valori nel nuovo HashNode
+    nuovoNodo->distanza=distanza;
+    nuovoNodo->parcoAuto=parcoAuto;
+    nuovoNodo->successivo=htAutostrada->table[indice];
+    htAutostrada->table[indice]=nuovoNodo;
+    //è stato aggiunto un nuovo nodo, questo implica che bisogna aumentare la dimensione della HashTable
+    htAutostrada->dimensione++;
+
+    //bisogna reallocare la HashTable
+    if(htAutostrada->dimensione > htAutostrada->capacita*PERCENTUALE_REALLOC){
+        reHashAutostrada(htAutostrada);
+    }
+}
+
+/**
+ * Elimina stazione dall'autostrada.
+ *
+ * @param htAutostrada l'autostrada in cui si trova la stazione.
+ * @param distanza la distanza a cui si trova la stazione da eliminare.
+ */
+void eliminaStazione(struct HashTableAutostrada *htAutostrada, unsigned int distanza){
+    /**
+     * Indice nel quale si trova la chiave.
+     */
+    unsigned int indice= funzioneDiHash(distanza, htAutostrada->capacita);
+    /**
+     * Nodo corrente,
+     * corrente=corrente->successivo.
+     */
+    struct HashNodeStazione *corrente=htAutostrada->table[indice];
+    /**
+     * Nodo precedente,
+     * precedente=corrente.
+     */
+    struct HashNodeStazione *precedente=NULL;
+
+
+    //trova il nodo con la chiave corrispondente, assegna corrente AND precedente
+    while (corrente!=NULL && corrente->distanza!=distanza){
+        precedente=corrente;
+        corrente=corrente->successivo;
+    }
+
+    //chiave NON trovata
+    if(corrente==NULL){
+        return;
+    }
+    //chiave trovata
+    else{
+        //il nodo da eliminare è il primo della lista presente nella posizione indicata
+        if(precedente==NULL){
+            htAutostrada->table[indice]=corrente->successivo;
+        }
+        //il nodo da eliminare NON è il primo della lista presente nella posizione indicate
+        else{
+            precedente->successivo=corrente->successivo;
+        }
+    }
+
+    //dealloca il HashNode
+    free(corrente->parcoAuto);
+    free(corrente);
+    //riduciamo il numero di elementi presenti nella HashTable
+    htAutostrada->dimensione--;
+}
+
+struct HashNodeStazione *ricercaStazione(struct HashTableAutostrada *htAutostrada, unsigned int distanza){
+    /**
+     * Indice nel quale si trova la chiave.
+     */
+    unsigned int indice= funzioneDiHash(distanza, htAutostrada->capacita);
+    /**
+     * HashNode corrente.
+     */
+    struct HashNodeStazione *corrente=htAutostrada->table[indice];
+
+    //fino a che ci sono altri HashNode nella posizione richiesta
+    while(corrente!=NULL){
+        //abbiamo trovato la chiave
+        if(corrente->distanza==distanza){
+            return corrente;
+        }
+            //guardiamo nel prossimo HashNode
+        else{
+            corrente=corrente->successivo;
+        }
+    }
+
+    //NON abbiamo trovato la chiave --> corrente=NULL
+    return corrente;
+}
+
 /**
  * Ritorna 1 se la stazione esiste sull'autostrada.
  *
  * @param distanza distanza in cui si trova la stazione di interesse.
  * @return 1 se la stazione esiste sull'autostrada, 0 altrimenti
  */
-int StazioneGiaPresente(unsigned int distanza){
-    //TODO da fare
-    if(distanza==1)
-        return 1;
+int StazioneGiaPresente(struct HashTableAutostrada *htAutostrada, unsigned int distanza){
+    /**
+     * Indice nel quale si trova la chiave.
+     */
+    unsigned int indice= funzioneDiHash(distanza, htAutostrada->capacita);
+    /**
+     * HashNode corrente.
+     */
+    struct HashNodeStazione *corrente=htAutostrada->table[indice];
+
+
+    //fino a che ci sono altri HashNode nella posizione richiesta
+    while(corrente!=NULL){
+        //abbiamo trovato la chiave
+        if(corrente->distanza==distanza){
+            return 1;
+        }
+        //guardiamo nel prossimo HashNode
+        else{
+            corrente=corrente->successivo;
+        }
+    }
+
+    //NON abbiamo trovato la chiave
     return 0;
 }
 
@@ -390,14 +831,15 @@ void AggiungiStazione(){
     /**
      * Parco auto della stazione.
      */
-    struct HashTable *parcoAuto=NULL;
+    struct HashTableParcoAuto *parcoAuto=NULL;
 
 
     //lettura distanza della stazione da aggiungere
     scanf("%d", &distanza);
 
     //stazione già presente
-    if(StazioneGiaPresente(distanza)==1){
+    if(StazioneGiaPresente(autostrada, distanza)==1){
+        //la stazione NON è stata aggiunta
         printf("non aggiunta");
     }
     //stazione NON presente
@@ -415,7 +857,10 @@ void AggiungiStazione(){
             //aggiungi autonomiaAuto al parco auto sopra creato
             aggiungiAuto(parcoAuto, autonomiaAuto);
         }
-        //TODO aggiungi stazione all'autostrada
+        //aggiunta la stazione
+        aggiungiStazione(autostrada, distanza, parcoAuto);
+
+        //la stazione è stata aggiunta
         printf("aggiunta");
     }
 }
@@ -427,18 +872,19 @@ void AggiungiAuto(){
     /**
     * Distanza della stazione dall'origine
     */
-    int distanzaStazione=0;
+    unsigned int distanzaStazione=0;
     /**
      * Autonomia dell'auto da aggiungere alla stazione
      */
-    int autonomiaAutoDaAggiungere=0;
+    unsigned int autonomiaAutoDaAggiungere=0;
 
 
     //lettura distanzaStazione della stazione a cui aggiungere una macchina
     scanf("%d", &distanzaStazione);
 
     //stazione NON presente
-    if(StazioneGiaPresente(distanzaStazione)==0){
+    if(StazioneGiaPresente(autostrada, distanzaStazione)==0){
+        //auto NON aggiunta
         printf("non aggiunta");
     }
     //stazione presente
@@ -446,7 +892,10 @@ void AggiungiAuto(){
         //leggi chiave auto da aggiungere
         scanf("%d", &autonomiaAutoDaAggiungere);
 
-        //TODO aggiungi auto al praco auto della stazione
+        //aggiungi auto al praco auto della stazione
+        aggiungiAuto(ricercaStazione(autostrada, distanzaStazione)->parcoAuto, autonomiaAutoDaAggiungere);
+
+        //auto aggiunta la parco auto
         printf("aggiunta");
     }
 }
@@ -458,18 +907,22 @@ void DemolisciStazione(){
     /**
     * Distanza dall'origine della stazione
     */
-    int distanza=0;
+    unsigned int distanza=0;
 
     //lettura distanza della stazione da demolire
     scanf("%d", &distanza);
 
     //Se stazione NON presente
-    if(StazioneGiaPresente(distanza)==0){
+    if(StazioneGiaPresente(autostrada, distanza)==0){
+        //stazione NON demolita
         printf("non demolita");
     }
     //stazione presente
     else{
-        //TODO demolisci stazione
+        //demolisci stazione
+        eliminaStazione(autostrada, distanza);
+
+        //stazione demolita
         printf("demolita");
     }
 }
@@ -481,17 +934,22 @@ void RottamaAuto(){
     /**
     * Distanza della stazione dall'origine
     */
-    int distanzaStazione=0;
+    unsigned int distanzaStazione=0;
     /**
      * Autonomia dell'auto da rottamare dalla stazione
      */
-    int autonomiaAutoDaRottamare=0;
+    unsigned int autonomiaAutoDaRottamare=0;
+    /**
+     * Stazione di interesse.
+     */
+    struct HashNodeStazione *stazione= ricercaStazione(autostrada, distanzaStazione);
 
     //lettura distanzaStazione della stazione da cui rottamare una macchina
     scanf("%d", &distanzaStazione);
 
     //Se stazione NON presente
-    if(StazioneGiaPresente(distanzaStazione)==0){
+    if(StazioneGiaPresente(autostrada, distanzaStazione)==0){
+        //auto NON rottamata
         printf("non rottamata");
     }
     //stazione presente
@@ -501,10 +959,16 @@ void RottamaAuto(){
 
         //TODO if
         //Se auto NON presente nel parco auto della stazione
-            //printf("non rottamata")
-        //altrimenti
-            //rottama macchina
-            //printf("rottamata")
+        if(ricercaAuto(stazione->parcoAuto, autonomiaAutoDaRottamare)==0){
+            //auto NON rottamata
+            printf("non rottamata");
+        }
+        //auto presente nel parco auto della stazione
+        else{
+            eliminaAuto(stazione->parcoAuto, autonomiaAutoDaRottamare);
+            //auto rottamata
+            printf("rottamata");
+        }
     }
 }
 
@@ -526,11 +990,11 @@ void PianificaPercorso(){
     scanf("%d", &distanzaStazioneArrivo);
 
     //Se stazione partenza NON esiste
-    if(StazioneGiaPresente(distanzaStazionePartenza)==0){
+    if(StazioneGiaPresente(autostrada, distanzaStazionePartenza)==0){
         printf("nessun percorso");
     }
     //se stazione arrivo NON esiste
-    else if(StazioneGiaPresente(distanzaStazioneArrivo)==0){
+    else if(StazioneGiaPresente(autostrada, distanzaStazioneArrivo)==0){
         printf("nessun percorso");
     }
     //se stazione partenza == stazione arrivo
@@ -594,7 +1058,7 @@ int main() {
 
 
     //inizializzazione autostrada
-    autostrada= inizializzazioneHashTable(DIMENSIONE_INIZIALE_AUTOSTRADA);
+    autostrada= creaAutostrada(DIMENSIONE_INIZIALE_AUTOSTRADA);
 
     //continua a leggere fino a che non leggi EOF
     do{
