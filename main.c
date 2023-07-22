@@ -120,6 +120,9 @@ struct ArrayNodeStazione{
     unsigned int autonomiaMassima;
 };
 
+/**
+ * Struct --> Rappresenta un nodo nel percorso - serve per l'algoritmo A*.
+ */
 struct PercorsoNode{
     /**
      * Distanza a cui si trova la stazione.
@@ -137,6 +140,10 @@ struct PercorsoNode{
      * Funzione di valutazione - g+h.
      */
     double f;
+    /**
+     * Indice del nodo genitore nell'Array della stazioni.
+     */
+    int genitore;
 };
 
 
@@ -686,13 +693,20 @@ void minHeapify(struct PercorsoNode heap[], unsigned int dimensione, unsigned in
  *
  * @param heap lo Heap a cui va aggiunto il nuovo nodo.
  * @param dimensione la dimensione dello Heap.
+ * @param lunghezzaArray la lunghezza dell'Array che contiene lo Heap.
  * @param nodoDaAggiungere il nodo da aggiungere allo Heap.
  */
-void inserimentoNelloHeap(struct PercorsoNode heap[], unsigned int *dimensione, struct PercorsoNode nodoDaAggiungere){
+void inserimentoNelloHeap(struct PercorsoNode heap[], unsigned int *dimensione, int *lunghezzaArray, struct PercorsoNode nodoDaAggiungere){
     /**
      * Indice a cui andrà aggiunto il nuovo nodo.
      */
     int indice=(int) (*dimensione)++;
+
+
+    //se l'array è completamente pieno --> riallocare l'array
+    if(*lunghezzaArray==*dimensione){
+        heap=(struct PercorsoNode *) realloc(heap, (*dimensione)+5);
+    }
 
     //facciamo "spazio" per aggiungere il nuovo nodo
     while (indice>0 && nodoDaAggiungere.f<heap[(int) ((indice-1)/2)].f){
@@ -789,7 +803,120 @@ double distanzaEuclideaEuristica(unsigned int a, unsigned int b){
     return abs((int) (b-a));
 }
 
-//TODO funzione A* vera e propria
+//TODO controllare indici degli array
+/**
+ * Algoritmo A* per la ricerca del percorso minimo.
+ *
+ * @param stazioni insieme dei tutte le stazioni tra partenza e arrivo.
+ * @param numeroStazioni numero di stazioni tra partenza e arrivo.
+ * @param partenza indice della stazione di partenza.
+ * @param arrivo indice della stazione di arrivo.
+ * @param percorso percorso minimo tra partenza e arrivo.
+ * @return la lunghezza del percorso minimo, 0 se NON ha trovato un percorso.
+ */
+int aStarInAvanti(struct ArrayNodeStazione stazioni[], int numeroStazioni, int partenza, int arrivo, int *percorso){
+    /**
+     * Insieme dei nodi visitati.
+     */
+    int *visitati=(int *) calloc((int) (arrivo-partenza), sizeof(int));
+    /**
+     * Nodo di partenza.
+     */
+    struct PercorsoNode nodoPartenza={partenza, 0.0, distanzaEuclideaEuristica(stazioni[partenza].distanza, stazioni[arrivo].distanza), 0.0, -1};
+    /**
+     * Lunghezza Heap.
+     */
+    int lunghezzaHeap=(int) ((arrivo-partenza)/2);
+    /**
+     * Heap dove verranno salvati i nodi da esaminare.
+     */
+    struct PercorsoNode *heapPrioritario=(struct PercorsoNode *) calloc(lunghezzaHeap, sizeof(struct PercorsoNode));
+    /**
+     * Dimensione dello Heap.
+     */
+    unsigned int dimensioneHeap=0;
+    /**
+     * Lunghezza del percorso minimo.
+     */
+    int indicePercorso=0;
+    /**
+     * Distanza tra 2 nodi.
+     */
+    double distanza=0;
+
+
+    //inserimento del nodo di partenza nello heap
+    inserimentoNelloHeap(heapPrioritario, &dimensioneHeap, &lunghezzaHeap, nodoPartenza);
+
+    while (dimensioneHeap>0){
+        //nodo con il valore minimo nello Heap
+        struct PercorsoNode corrente= estraiMinimoDalloHeap(heapPrioritario, &dimensioneHeap);
+
+        //verifica se siamo arrivati a destinazione
+        if(corrente.distanza==arrivo){
+            indicePercorso=0;
+            //costruiamo il percorso attraverso i nodi genitori
+            while (corrente.genitore!=-1){
+                //aggiungiamo il nodo corrente al percorso
+                percorso[indicePercorso]=(int) corrente.distanza;
+                corrente=heapPrioritario[corrente.genitore];
+                indicePercorso++;
+            }
+            percorso[indicePercorso]=(int) corrente.distanza;
+
+            //ritorna il numero di tappe
+            return indicePercorso;
+        }
+
+        //aggiungo nodo corrente all'Array dei nodi visitati
+        visitati[arrivo-corrente.distanza]=1;
+
+        //esamino i vicini del nodo corrente
+        for (int i = 0; i < numeroStazioni; ++i) {
+            if(!visitati[i] && i!=arrivo-corrente.distanza){
+                //calcolo della distanza tra 2 nodi
+                distanza= distanzaEuclideaEuristica(stazioni[corrente.distanza].distanza, stazioni[i].distanza);
+
+                //controllo se auto può raggiungere stazione successiva
+                if(distanza<=corrente.g+stazioni[corrente.distanza].autonomiaMassima){
+                    //creo nuovo nodo per il successivo
+                    /**
+                     * Nodo che rappresenta il successivo rispetto a quello controllato adesso.
+                     */
+                    struct PercorsoNode successivo;
+                    successivo.distanza=i;
+                    successivo.g= corrente.g + distanza;
+                    successivo.h=distanzaEuclideaEuristica(stazioni[i].distanza, stazioni[arrivo].distanza);
+                    successivo.f= successivo.g + successivo.h;
+                    successivo.genitore=(int) corrente.distanza;
+
+                    //inserisci il successivo nello Heap
+                    inserimentoNelloHeap(heapPrioritario, &dimensioneHeap, &lunghezzaHeap, successivo);
+                }
+            }
+        }
+    }
+
+    //nessun percorso trovato
+    return 0;
+}
+
+/**
+ * Algoritmo A* per la ricerca del percorso minimo.
+ *
+ * @param stazioni insieme dei tutte le stazioni tra partenza e arrivo.
+ * @param numeroStazioni numero di stazioni tra partenza e arrivo.
+ * @param partenza indice della stazione di partenza.
+ * @param arrivo indice della stazione di arrivo.
+ * @param percorso percorso minimo tra partenza e arrivo.
+ * @return la lunghezza del percorso minimo, 0 se NON ha trovato un percorso.
+ */
+int aStarAllIndietro(struct ArrayNodeStazione stazioni[], int numeroStazioni, int partenza, int arrivo, int *percorso){
+    //TODO da fare --> dovrebbe essere simile all'andata cambiando solo alcuni controlli - forse, spero ＞﹏＜
+
+    //nessun percorso trovato
+    return 0;
+}
 
 
 
@@ -1080,4 +1207,6 @@ int main() {
 
 /*
  * tutteLeStazioni --> per ridurre memoria si potrebbe fare realloc alla fine prima di restituire l'Array
+ *
+ * aStar --> controllare tutti gli indici degli array
  */
