@@ -106,6 +106,39 @@ struct HashTableAutostrada{
     unsigned int capacita;
 };
 
+/**
+ * Struct --> Rappresenta una posizione nell'Array contenente tutte le stazioni tra quella iniziale e quella di arrivo.
+ */
+struct ArrayNodeStazione{
+    /**
+     * Distanza a cui si trova la stazione.
+     */
+    unsigned int distanza;
+    /**
+     * Autonomia dell'auto massima presente nel parco auto.
+     */
+    unsigned int autonomiaMassima;
+};
+
+struct PercorsoNode{
+    /**
+     * Distanza a cui si trova la stazione.
+     */
+    unsigned int distanza;
+    /**
+     * Distanza percorsa fino a questa stazione.
+     */
+    double g;
+    /**
+     * Valore euristico - distanza euristica (funzione euristica).
+     */
+    double h;
+    /**
+     * Funzione di valutazione - g+h.
+     */
+    double f;
+};
+
 
 
 //VARIABILI GLOBALI
@@ -531,6 +564,13 @@ void eliminaStazione(struct HashTableAutostrada *htAutostrada, unsigned int dist
     htAutostrada->dimensione--;
 }
 
+/**
+ * Ricerca la stazione nell'autostrada alla distanza data.
+ *
+ * @param htAutostrada l'autostrada dove eseguire la ricerca.
+ * @param distanza la distanza a cui si trova la stazione interessate.
+ * @return la stazione ricercata, se esiste, altrimenti ritorna NULL.
+ */
 struct HashNodeStazione *ricercaStazione(struct HashTableAutostrada *htAutostrada, unsigned int distanza){
     /**
      * Indice nel quale si trova la chiave.
@@ -589,6 +629,167 @@ int StazioneGiaPresente(struct HashTableAutostrada *htAutostrada, unsigned int d
     //NON abbiamo trovato la chiave
     return 0;
 }
+
+
+
+//GESTIONE HEAP
+/**
+ * Utilizzata per mantenere corrette le proprietà dello Heap dopo un'eliminazione.
+ *
+ * @param heap lo Heap da prendere in esame.
+ * @param dimensione la dimensione dello Heap.
+ * @param indice indice del nodo corrente - nodo che sta venendo spostato.
+ */
+void minHeapify(struct PercorsoNode heap[], unsigned int dimensione, unsigned int indice){
+    /**
+     * Indice della parte sinistra dello Heap.
+     */
+    int sx=(int) (2*indice+1);
+    /**
+     * Indice della parte destra dello Heap.
+     */
+    int dx=(int) (2*indice+2);
+    /**
+     * Indice del nodo con il valore più piccolo tra il nodo corrente e i figli sx e dx.
+     */
+    int piccolo=(int) indice;
+
+
+    //se la funzione di valutazione del nodo a sinistra è più piccola di quella del nodo più piccolo
+    if(sx<dimensione && heap[sx].f<heap[piccolo].f){
+        //il più piccolo diventa quello a sinistra
+        piccolo=sx;
+    }
+    //se la funzione di valutazione del nodo a destra è più piccola di quella del nodo più piccolo
+    if(dx<dimensione && heap[dx].f<heap[piccolo].f){
+        //il più piccolo diventa quello a destra
+        piccolo=dx;
+    }
+
+    //il nodo che stiamo prendendo in esame NON è il più piccolo tra lui e i figli
+    if(piccolo!=indice){
+        /**
+         * Temporaneo per salvare il valore che è presente in posizione indice.
+         */
+        struct PercorsoNode tmp=heap[indice];
+        //in posizione padre ci va il più piccolo tra i tre
+        heap[indice]=heap[piccolo];
+        heap[piccolo]=tmp;
+
+        //ricorsione per sistemare tutto lo Heap
+        minHeapify(heap, dimensione, piccolo);
+    }
+}
+
+/**
+ * Inserisce nello Heap un nuovo nodo.
+ *
+ * @param heap lo Heap a cui va aggiunto il nuovo nodo.
+ * @param dimensione la dimensione dello Heap.
+ * @param nodoDaAggiungere il nodo da aggiungere allo Heap.
+ */
+void inserimentoNelloHeap(struct PercorsoNode heap[], unsigned int *dimensione, struct PercorsoNode nodoDaAggiungere){
+    /**
+     * Indice a cui andrà aggiunto il nuovo nodo.
+     */
+    int indice=(int) (*dimensione)++;
+
+    //facciamo "spazio" per aggiungere il nuovo nodo
+    while (indice>0 && nodoDaAggiungere.f<heap[(int) ((indice-1)/2)].f){
+        //sistemiamo gli altri nodi
+        heap[indice]=heap[(int) ((indice-1)/2)];
+        indice=(int) ((indice-1)/2);
+    }
+    heap[indice]=nodoDaAggiungere;
+}
+
+/**
+ * Restituisce il minimo nodo presente nello Heap - lo elimina anche.
+ *
+ * @param heap lo Heap in cui va ricercato il nodo minimo.
+ * @param dimensione la dimensione dello Heap.
+ * @return il nodo minimo presente nello Heap.
+ */
+struct PercorsoNode estraiMinimoDalloHeap(struct PercorsoNode heap[], unsigned int *dimensione){
+    /**
+     * Nodo minimo nello Heap da ritornare.
+     */
+    struct PercorsoNode nodoMinimo=heap[0];
+
+    //sostituisce la radice con l'ultimo elemento nello Heap
+    heap[0]=heap[(int) --(*dimensione)];
+    //sistema lo Heap
+    minHeapify(heap, *dimensione, 0);
+
+    //ritorna il nodo minimo
+    return nodoMinimo;
+}
+
+//TODO elimina heap
+
+
+//PIANIFICA PERCORSO
+/**
+ * Ritorna un Array contenente tutte le stazioni tra quella di partenza e quella di arrivo.
+ *
+ * @param partenza distanza a cui si trova la stazione di partenza.
+ * @param arrivo distanza a cui si trova la stazione di arrivo.
+ * @return un Array che contiene le stazioni tra quella di partenza e quella di arrivo con l'autonomia massima dell'auto nel loro parco auto.
+ */
+struct ArrayNodeStazione *tutteLeStazioni(unsigned int partenza, unsigned int arrivo){
+    /**
+     * Dimensione iniziale array.
+     */
+    int x=(int) ((arrivo-partenza)/2);
+    /**
+     * Array di stazioni con la loro autonomia massima.
+     */
+    struct ArrayNodeStazione *stazioniIntermedie=(struct ArrayNodeStazione *) calloc(x, sizeof(struct ArrayNodeStazione));
+    /**
+     * Posizione libera nell'Array stazioniIntermedie.
+     */
+    int posizioneArray=0;
+    /**
+     * Stazione ricercata.
+     */
+    struct HashNodeStazione *ricerca=NULL;
+
+
+    //per ogni stazione che ci potrebbe essere tra partenza e arrivo
+    for (unsigned int i = partenza; i < arrivo; ++i) {
+        //salviamo la stazione cercata
+        ricerca= ricercaStazione(autostrada, i);
+        //se la stazione esiste la aggiungiamo alle stazioniIntermedie[]
+        if(ricerca!=NULL){
+            //se l'Array stazioniIntermedie[] è pieno lo reallochiamo
+            if(posizioneArray>x){
+                x=x+7;
+                stazioniIntermedie=realloc(stazioniIntermedie, x*sizeof(struct ArrayNodeStazione));
+            }
+            //aggiungiamo la stazione
+            stazioniIntermedie[posizioneArray].distanza= ricerca->distanza;
+            stazioniIntermedie[posizioneArray].autonomiaMassima=ricerca->autonomiaMassima;
+            //aumentiamo la prossima posizione libera
+            posizioneArray++;
+        }
+    }
+
+    //stazioni intermedie tra quella di partenza e quella di arrivo
+    return stazioniIntermedie;
+}
+
+/**
+ * Ritorna la distanza tra 2 stazioni - funzione euristica euclidea.
+ *
+ * @param a stazione A.
+ * @param b stazione B.
+ * @return la distanza tra la stazione A e B.
+ */
+double distanzaEuclideaEuristica(unsigned int a, unsigned int b){
+    return abs((int) (b-a));
+}
+
+//TODO funzione A* vera e propria
 
 
 
@@ -796,17 +997,8 @@ void PianificaPercorso(){
     scanf("%d", &distanzaStazionePartenza);
     scanf("%d", &distanzaStazioneArrivo);
 
-    //TODO capire se effettivamente le stazioni di partenza e di arrivo esistono sempre
-    //Se stazione partenza NON esiste
-    if(StazioneGiaPresente(autostrada, distanzaStazionePartenza)==0){
-        printf("nessun percorso");
-    }
-    //se stazione arrivo NON esiste
-    else if(StazioneGiaPresente(autostrada, distanzaStazioneArrivo)==0){
-        printf("nessun percorso");
-    }
     //stazione di partenza NON ha macchine
-    else if(ricercaStazione(autostrada, distanzaStazionePartenza)->autonomiaMassima==0){
+    if(ricercaStazione(autostrada, distanzaStazionePartenza)->autonomiaMassima==0){
         printf("nessun percorso");
     }
     //se stazione partenza == stazione arrivo
@@ -881,3 +1073,11 @@ int main() {
 
     return 0;
 }
+
+
+
+
+
+/*
+ * tutteLeStazioni --> per ridurre memoria si potrebbe fare realloc alla fine prima di restituire l'Array
+ */
