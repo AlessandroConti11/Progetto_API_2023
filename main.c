@@ -739,7 +739,6 @@ struct PercorsoNode estraiMinimoDalloHeap(struct PercorsoNode heap[], unsigned i
     return nodoMinimo;
 }
 
-//TODO elimina heap
 
 
 //PIANIFICA PERCORSO
@@ -748,6 +747,7 @@ struct PercorsoNode estraiMinimoDalloHeap(struct PercorsoNode heap[], unsigned i
  *
  * @param partenza distanza a cui si trova la stazione di partenza.
  * @param arrivo distanza a cui si trova la stazione di arrivo.
+ * @param numeroDiStazioni numero di stazioni tra quella di partenza e quella di arrivo.
  * @return un Array che contiene le stazioni tra quella di partenza e quella di arrivo con l'autonomia massima dell'auto nel loro parco auto.
  */
 struct ArrayNodeStazione *tutteLeStazioni(unsigned int partenza, unsigned int arrivo, int *numeroDiStazioni){
@@ -852,7 +852,7 @@ int aStarInAvanti(struct ArrayNodeStazione stazioni[], int numeroStazioni, int p
     /**
      * Lunghezza Heap.
      */
-    int lunghezzaHeap=(int) ((arrivo-partenza)/2);
+    int lunghezzaHeap=numeroStazioni;
     /**
      * Heap dove verranno salvati i nodi da esaminare.
      */
@@ -869,6 +869,10 @@ int aStarInAvanti(struct ArrayNodeStazione stazioni[], int numeroStazioni, int p
      * Distanza tra 2 nodi.
      */
     double distanza=0;
+    /**
+     * Nodo corrente da controllare nello heap.
+     */
+    struct PercorsoNode corrente;
 
 
     //inserimento del nodo di partenza nello heap
@@ -876,7 +880,7 @@ int aStarInAvanti(struct ArrayNodeStazione stazioni[], int numeroStazioni, int p
 
     while (dimensioneHeap>0){
         //nodo con il valore minimo nello Heap
-        struct PercorsoNode corrente= estraiMinimoDalloHeap(heapPrioritario, &dimensioneHeap);
+        corrente= estraiMinimoDalloHeap(heapPrioritario, &dimensioneHeap);
 
         //verifica se siamo arrivati a destinazione
         if(corrente.distanza==arrivo){
@@ -890,6 +894,7 @@ int aStarInAvanti(struct ArrayNodeStazione stazioni[], int numeroStazioni, int p
             }
             percorso[indicePercorso]=(int) corrente.distanza;
 
+            free(heapPrioritario);
             //ritorna il numero di tappe
             return indicePercorso;
         }
@@ -923,6 +928,7 @@ int aStarInAvanti(struct ArrayNodeStazione stazioni[], int numeroStazioni, int p
         }
     }
 
+    free(heapPrioritario);
     //nessun percorso trovato
     return 0;
 }
@@ -1216,11 +1222,10 @@ void PianificaPercorso(){
          * Tutte le stazioni comprese tra la partenza e l'arrivo.
          */
         struct ArrayNodeStazione *stazioniIntermedie= tutteLeStazioni(distanzaStazionePartenza, distanzaStazioneArrivo, &numeroDiStazioni);
-        //TODO scegliere la dimensione iniziale dell'array
         /**
          * Percorso minimo dalla stazione di partenza fino a quella di arrivo.
          */
-        int *percorso=(int *) calloc(distanzaStazioneArrivo-distanzaStazionePartenza, sizeof(int));
+        int *percorso=(int *) calloc(numeroDiStazioni, sizeof(int));
         /**
          * Numero di fermate che bisogna compiere nel percorso.
          */
