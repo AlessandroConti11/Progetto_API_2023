@@ -696,7 +696,7 @@ void minHeapify(struct PercorsoNode heap[], unsigned int dimensione, unsigned in
  * @param lunghezzaArray la lunghezza dell'Array che contiene lo Heap.
  * @param nodoDaAggiungere il nodo da aggiungere allo Heap.
  */
-void inserimentoNelloHeap(struct PercorsoNode heap[], unsigned int *dimensione, int *lunghezzaArray, struct PercorsoNode nodoDaAggiungere){
+void inserimentoNelloHeap(struct PercorsoNode heap[], unsigned int *dimensione, const int *lunghezzaArray, struct PercorsoNode nodoDaAggiungere){
     /**
      * Indice a cui andrà aggiunto il nuovo nodo.
      */
@@ -844,7 +844,7 @@ int aStarInAvanti(struct ArrayNodeStazione stazioni[], int numeroStazioni, int p
     /**
      * Insieme dei nodi visitati.
      */
-    int *visitati=(int *) calloc((int) (arrivo-partenza), sizeof(int));
+    int *visitati=(int *) calloc((int) (arrivo-partenza+1), sizeof(int));
     /**
      * Nodo di partenza.
      */
@@ -900,11 +900,11 @@ int aStarInAvanti(struct ArrayNodeStazione stazioni[], int numeroStazioni, int p
         }
 
         //aggiungo nodo corrente all'Array dei nodi visitati
-        visitati[arrivo-corrente.distanza]=1;
+        visitati[corrente.distanza-partenza]=1; //TODO qua sembra che vada in segmentation fault
 
         //esamino i vicini del nodo corrente
         for (int i = 0; i < numeroStazioni; ++i) {
-            if(!visitati[i] && i!=arrivo-corrente.distanza){
+            if(!visitati[i] && i!=corrente.distanza-partenza){
                 //calcolo della distanza tra 2 nodi
                 distanza= distanzaEuclideaEuristica(stazioni[corrente.distanza].distanza, stazioni[i].distanza);
 
@@ -1021,7 +1021,7 @@ void AggiungiStazione(){
     //stazione già presente
     if(StazioneGiaPresente(autostrada, distanza)==1){
         //la stazione NON è stata aggiunta
-        printf("non aggiunta");
+        printf("non aggiunta\n");
 
         //devo comunque leggere le auto inserite in input altrimenti restano nel buffer
         scanf("%d", &numeroAuto);
@@ -1055,7 +1055,7 @@ void AggiungiStazione(){
         aggiungiStazione(autostrada, distanza, parcoAuto, maxAutonomia);
 
         //la stazione è stata aggiunta
-        printf("aggiunta");
+        printf("aggiunta\n");
     }
 }
 
@@ -1079,7 +1079,7 @@ void AggiungiAuto(){
     //stazione NON presente
     if(StazioneGiaPresente(autostrada, distanzaStazione)==0){
         //auto NON aggiunta
-        printf("non aggiunta");
+        printf("non aggiunta\n");
 
         //devo comunque leggere l'auto inserita in input altrimenti resta nel buffer
         scanf("%d", &autonomiaAutoDaAggiungere);
@@ -1103,7 +1103,7 @@ void AggiungiAuto(){
         aggiungiAuto(stazione->parcoAuto, autonomiaAutoDaAggiungere);
 
         //auto aggiunta la parco auto
-        printf("aggiunta");
+        printf("aggiunta\n");
     }
 }
 
@@ -1122,7 +1122,7 @@ void DemolisciStazione(){
     //Se stazione NON presente
     if(StazioneGiaPresente(autostrada, distanza)==0){
         //stazione NON demolita
-        printf("non demolita");
+        printf("non demolita\n");
     }
     //stazione presente
     else{
@@ -1130,7 +1130,7 @@ void DemolisciStazione(){
         eliminaStazione(autostrada, distanza);
 
         //stazione demolita
-        printf("demolita");
+        printf("demolita\n");
     }
 }
 
@@ -1154,7 +1154,7 @@ void RottamaAuto(){
     //Se stazione NON presente
     if(StazioneGiaPresente(autostrada, distanzaStazione)==0){
         //auto NON rottamata
-        printf("non rottamata");
+        printf("non rottamata\n");
 
         //devo comunque leggere le auto inserite in input altrimenti restano nel buffer
         scanf("%d", &autonomiaAutoDaRottamare);
@@ -1172,7 +1172,7 @@ void RottamaAuto(){
         //Se auto NON presente nel parco auto della stazione
         if(ricercaAuto(stazione->parcoAuto, autonomiaAutoDaRottamare)==0){
             //auto NON rottamata
-            printf("non rottamata");
+            printf("non rottamata\n");
         }
         //auto presente nel parco auto della stazione
         else{
@@ -1182,7 +1182,7 @@ void RottamaAuto(){
             //eliminiamo l'auto dal parco auto della stazione
             eliminaAuto(stazione->parcoAuto, autonomiaAutoDaRottamare);
             //auto rottamata
-            printf("rottamata");
+            printf("rottamata\n");
         }
     }
 }
@@ -1206,11 +1206,11 @@ void PianificaPercorso(){
 
     //stazione di partenza NON ha macchine
     if(ricercaStazione(autostrada, distanzaStazionePartenza)->autonomiaMassima==0){
-        printf("nessun percorso");
+        printf("nessun percorso\n");
     }
     //se stazione partenza == stazione arrivo
     else if(distanzaStazionePartenza==distanzaStazioneArrivo){
-        printf("%d", distanzaStazionePartenza);
+        printf("%d\n", distanzaStazionePartenza);
     }
     //ricerca il percorso ottimale per andare dalla partenza all'arrivo
     else{
@@ -1231,8 +1231,14 @@ void PianificaPercorso(){
          */
         int numeroFermate= aStar(stazioniIntermedie, numeroDiStazioni, distanzaStazionePartenza, distanzaStazioneArrivo, percorso);
 
+        //se NON esiste il percorso
+        if(numeroFermate==0){
+            printf("nessun percorso\n");
+        }
         //stampare il percorso
-        stampaPercorso(numeroFermate, percorso);
+        else{
+            stampaPercorso(numeroFermate, percorso);
+        }
     }
 }
 
