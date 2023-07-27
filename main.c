@@ -692,20 +692,22 @@ void minHeapify(struct PercorsoNode heap[], unsigned int dimensione, unsigned in
  * Inserisce nello Heap un nuovo nodo.
  *
  * @param heap lo Heap a cui va aggiunto il nuovo nodo.
- * @param dimensione la dimensione dello Heap.
+ * @param dimensione la dimensione dello Heap - # elementi nello Heap.
  * @param lunghezzaArray la lunghezza dell'Array che contiene lo Heap.
  * @param nodoDaAggiungere il nodo da aggiungere allo Heap.
  */
-void inserimentoNelloHeap(struct PercorsoNode heap[], unsigned int *dimensione, const int *lunghezzaArray, struct PercorsoNode nodoDaAggiungere){
+void inserimentoNelloHeap(struct PercorsoNode heap[], unsigned int *dimensione, int *lunghezzaArray, struct PercorsoNode nodoDaAggiungere){
     /**
      * Indice a cui andrà aggiunto il nuovo nodo.
      */
-    int indice=(int) (*dimensione)++;
+    int indice=(int) (*dimensione);
 
 
     //se l'array è completamente pieno --> riallocare l'array
     if(*lunghezzaArray==*dimensione){
-        heap=(struct PercorsoNode *) realloc(heap, (*dimensione)+5);
+        //aumentiamo la lunghezza dell'array
+        (*lunghezzaArray)=(*lunghezzaArray)+5;
+        heap=(struct PercorsoNode *) realloc(heap, (*lunghezzaArray));
     }
 
     //facciamo "spazio" per aggiungere il nuovo nodo
@@ -715,6 +717,8 @@ void inserimentoNelloHeap(struct PercorsoNode heap[], unsigned int *dimensione, 
         indice=(int) ((indice-1)/2);
     }
     heap[indice]=nodoDaAggiungere;
+
+    (*dimensione)=++(*dimensione);
 }
 
 /**
@@ -725,13 +729,15 @@ void inserimentoNelloHeap(struct PercorsoNode heap[], unsigned int *dimensione, 
  * @return il nodo minimo presente nello Heap.
  */
 struct PercorsoNode estraiMinimoDalloHeap(struct PercorsoNode heap[], unsigned int *dimensione){
+    //TODO il minimo andrebbe tolto dallo Heap
     /**
      * Nodo minimo nello Heap da ritornare.
      */
     struct PercorsoNode nodoMinimo=heap[0];
 
     //sostituisce la radice con l'ultimo elemento nello Heap
-    heap[0]=heap[(int) --(*dimensione)];
+    (*dimensione)=--(*dimensione);
+    heap[0]=heap[(int) (*dimensione)];
     //sistema lo Heap
     minHeapify(heap, *dimensione, 0);
 
@@ -744,6 +750,7 @@ struct PercorsoNode estraiMinimoDalloHeap(struct PercorsoNode heap[], unsigned i
 //PIANIFICA PERCORSO
 /**
  * Ritorna un Array contenente tutte le stazioni tra quella di partenza e quella di arrivo.
+ * Adesso la dimensione è arrivo-partenza+1.
  *
  * @param partenza distanza a cui si trova la stazione di partenza.
  * @param arrivo distanza a cui si trova la stazione di arrivo.
@@ -754,7 +761,7 @@ struct ArrayNodeStazione *tutteLeStazioni(unsigned int partenza, unsigned int ar
     /**
      * Dimensione iniziale array.
      */
-    int x=(int) ((arrivo-partenza)/2);
+    int x=(int) (arrivo-partenza+1);
     /**
      * Array di stazioni con la loro autonomia massima.
      */
@@ -783,8 +790,8 @@ struct ArrayNodeStazione *tutteLeStazioni(unsigned int partenza, unsigned int ar
                     stazioniIntermedie=realloc(stazioniIntermedie, x*sizeof(struct ArrayNodeStazione));
                 }
                 //aggiungiamo la stazione
-                stazioniIntermedie[posizioneArray].distanza= ricerca->distanza;
-                stazioniIntermedie[posizioneArray].autonomiaMassima=ricerca->autonomiaMassima;
+                stazioniIntermedie[ricerca->distanza-partenza].distanza= ricerca->distanza;
+                stazioniIntermedie[ricerca->distanza-partenza].autonomiaMassima=ricerca->autonomiaMassima;
                 //aumentiamo la prossima posizione libera
                 posizioneArray++;
             }
@@ -804,8 +811,8 @@ struct ArrayNodeStazione *tutteLeStazioni(unsigned int partenza, unsigned int ar
                     stazioniIntermedie = realloc(stazioniIntermedie, x * sizeof(struct ArrayNodeStazione));
                 }
                 //aggiungiamo la stazione
-                stazioniIntermedie[posizioneArray].distanza = ricerca->distanza;
-                stazioniIntermedie[posizioneArray].autonomiaMassima = ricerca->autonomiaMassima;
+                stazioniIntermedie[ricerca->distanza-partenza].distanza = ricerca->distanza;
+                stazioniIntermedie[ricerca->distanza-partenza].autonomiaMassima = ricerca->autonomiaMassima;
                 //aumentiamo la prossima posizione libera
                 posizioneArray++;
             }
@@ -848,7 +855,8 @@ int aStarInAvanti(struct ArrayNodeStazione stazioni[], int numeroStazioni, int p
     /**
      * Nodo di partenza.
      */
-    struct PercorsoNode nodoPartenza={partenza, 0.0, distanzaEuclideaEuristica(stazioni[partenza].distanza, stazioni[arrivo].distanza), 0.0, -1};
+     //TODO indice stazioni
+    struct PercorsoNode nodoPartenza={partenza, 0.0, distanzaEuclideaEuristica(stazioni[partenza-partenza].distanza, stazioni[arrivo-partenza].distanza), 0.0, -1};
     /**
      * Lunghezza Heap.
      */
@@ -858,7 +866,7 @@ int aStarInAvanti(struct ArrayNodeStazione stazioni[], int numeroStazioni, int p
      */
     struct PercorsoNode *heapPrioritario=(struct PercorsoNode *) calloc(lunghezzaHeap, sizeof(struct PercorsoNode));
     /**
-     * Dimensione dello Heap.
+     * Dimensione dello Heap - # elementi nello Heap.
      */
     unsigned int dimensioneHeap=0;
     /**
@@ -872,7 +880,7 @@ int aStarInAvanti(struct ArrayNodeStazione stazioni[], int numeroStazioni, int p
     /**
      * Nodo corrente da controllare nello heap.
      */
-    struct PercorsoNode corrente;
+    struct PercorsoNode corrente={0, 0.0, 0.0, 0.0, -1};
 
 
     //inserimento del nodo di partenza nello heap
@@ -896,33 +904,38 @@ int aStarInAvanti(struct ArrayNodeStazione stazioni[], int numeroStazioni, int p
 
             free(heapPrioritario);
             //ritorna il numero di tappe
-            return indicePercorso;
+            return indicePercorso; //TODO forse stampato al contrario
         }
 
         //aggiungo nodo corrente all'Array dei nodi visitati
         visitati[corrente.distanza-partenza]=1; //TODO qua sembra che vada in segmentation fault
 
         //esamino i vicini del nodo corrente
-        for (int i = 0; i < numeroStazioni; ++i) {
+        for (int i = 0; i <= (arrivo-partenza+1); ++i) {
+            //nodo deve essere stato visitato AND NON è quello che stiamo controllando adesso
             if(!visitati[i] && i!=corrente.distanza-partenza){
-                //calcolo della distanza tra 2 nodi
-                distanza= distanzaEuclideaEuristica(stazioni[corrente.distanza].distanza, stazioni[i].distanza);
+                if(stazioni[i].distanza!=0) {
+                    //calcolo della distanza tra 2 nodi - nodo corrente e nodo vicino
+                    distanza = distanzaEuclideaEuristica(stazioni[corrente.distanza - partenza].distanza,
+                                                         stazioni[i].distanza); //TODO indice
 
-                //controllo se auto può raggiungere stazione successiva
-                if(distanza<=corrente.g+stazioni[corrente.distanza].autonomiaMassima){
-                    //creo nuovo nodo per il successivo
-                    /**
-                     * Nodo che rappresenta il successivo rispetto a quello controllato adesso.
-                     */
-                    struct PercorsoNode successivo;
-                    successivo.distanza=i;
-                    successivo.g= corrente.g + distanza;
-                    successivo.h=distanzaEuclideaEuristica(stazioni[i].distanza, stazioni[arrivo].distanza);
-                    successivo.f= successivo.g + successivo.h;
-                    successivo.genitore=(int) corrente.distanza;
+                    //controllo se auto può raggiungere stazione successiva
+                    if (distanza <= corrente.g + stazioni[corrente.distanza - partenza].autonomiaMassima) {
+                        //creo nuovo nodo per il successivo
+                        /**
+                         * Nodo che rappresenta il successivo rispetto a quello controllato adesso.
+                         */
+                        struct PercorsoNode successivo;
+                        successivo.distanza = i;
+                        successivo.g = corrente.g + distanza;
+                        successivo.h = distanzaEuclideaEuristica(stazioni[i].distanza,
+                                                                 stazioni[arrivo - partenza].distanza);
+                        successivo.f = successivo.g + successivo.h;
+                        successivo.genitore = (int) (corrente.distanza - partenza);
 
-                    //inserisci il successivo nello Heap
-                    inserimentoNelloHeap(heapPrioritario, &dimensioneHeap, &lunghezzaHeap, successivo);
+                        //inserisci il successivo nello Heap
+                        inserimentoNelloHeap(heapPrioritario, &dimensioneHeap, &lunghezzaHeap, successivo);
+                    }
                 }
             }
         }
