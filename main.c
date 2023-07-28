@@ -647,7 +647,7 @@ int StazioneGiaPresente(struct HashTableAutostrada *htAutostrada, unsigned int d
  * @param dimensione la dimensione dello Heap.
  * @param indice indice del nodo corrente - nodo che sta venendo spostato.
  */
-void minHeapify(struct PercorsoNode heap[], unsigned int dimensione, unsigned int indice){
+void minHeapify(struct PercorsoNode heap[], unsigned int *dimensione, unsigned int indice){
     /**
      * Indice della parte sinistra dello Heap.
      */
@@ -657,34 +657,64 @@ void minHeapify(struct PercorsoNode heap[], unsigned int dimensione, unsigned in
      */
     int dx=(int) (2*indice+2);
     /**
-     * Indice del nodo con il valore più piccolo tra il nodo corrente e i figli sx e dx.
+     * Indice del nodo con il valore più minimo tra il nodo corrente e i figli sx e dx.
      */
-    int piccolo=(int) indice;
+    int minimo=(int) indice;
 
 
-    //se la funzione di valutazione del nodo a sinistra è più piccola di quella del nodo più piccolo
-    if(sx<dimensione && heap[sx].f<heap[piccolo].f){
+    //se il nodo a sinistra è più piccolo di quello che stiamo valutando
+    if(sx<(*dimensione) && heap[sx].distanza<heap[indice].distanza){
         //il più piccolo diventa quello a sinistra
-        piccolo=sx;
+        minimo=sx;
     }
-    //se la funzione di valutazione del nodo a destra è più piccola di quella del nodo più piccolo
-    if(dx<dimensione && heap[dx].f<heap[piccolo].f){
+    //se il nodo a destra è più piccolo di quello che stiamo valutando
+    if(dx<(*dimensione) && heap[dx].distanza<heap[indice].distanza){
         //il più piccolo diventa quello a destra
-        piccolo=dx;
+        minimo=dx;
     }
 
-    //il nodo che stiamo prendendo in esame NON è il più piccolo tra lui e i figli
-    if(piccolo!=indice){
+    //se c'è un nodo più piccolo rispetto a quello che stiamo valutando - SWAPPING
+    if(minimo!=indice){
         /**
-         * Temporaneo per salvare il valore che è presente in posizione indice.
+         * Nodo minimo nello Heap.
          */
-        struct PercorsoNode tmp=heap[indice];
-        //in posizione padre ci va il più piccolo tra i tre
-        heap[indice]=heap[piccolo];
-        heap[piccolo]=tmp;
+        struct PercorsoNode tmp=heap[minimo];
+
+        //swapping
+        heap[minimo]=heap[indice];
+        heap[indice]=tmp;
 
         //ricorsione per sistemare tutto lo Heap
-        minHeapify(heap, dimensione, piccolo);
+        minHeapify(heap, dimensione, minimo);
+    }
+}
+
+/**
+ * Funzione di supporto per riorganizzare lo Heap dopo un inserimento nello stesso.
+ *
+ * @param heap lo Heap che deve essere sistemato.
+ * @param indice indice del nodo da sistemare.
+ */
+void sistemareInserimentoNelloHeap(struct PercorsoNode heap[], int indice){
+    /**
+     * Genitore dell'elemento dell'indice.
+     */
+    int indiceGenitore=(indice-1)/2;
+    /**
+     * Temporaneo per salvare il nodo.
+     */
+    struct PercorsoNode tmp;
+
+
+    //se il genitore è più grande del figlio
+    if(heap[indiceGenitore].distanza > heap[indice].distanza){
+        //salviamo il valore del genitore
+        tmp=heap[indiceGenitore];
+        heap[indiceGenitore]=heap[indice];
+        heap[indice]=tmp;
+
+        //facciamo la stessa cosa per tutti i nodi nello Heap
+        sistemareInserimentoNelloHeap(heap, indiceGenitore);
     }
 }
 
@@ -697,28 +727,19 @@ void minHeapify(struct PercorsoNode heap[], unsigned int dimensione, unsigned in
  * @param nodoDaAggiungere il nodo da aggiungere allo Heap.
  */
 void inserimentoNelloHeap(struct PercorsoNode heap[], unsigned int *dimensione, int *lunghezzaArray, struct PercorsoNode nodoDaAggiungere){
-    /**
-     * Indice a cui andrà aggiunto il nuovo nodo.
-     */
-    int indice=(int) (*dimensione);
-
-
-    //se l'array è completamente pieno --> riallocare l'array
+    //se array è completamente pieno --> riallocare array
     if(*lunghezzaArray==*dimensione){
-        //aumentiamo la lunghezza dell'array
-        (*lunghezzaArray)=(*lunghezzaArray)+5;
+        //aumentare lunghezza array
+        *lunghezzaArray=(*lunghezzaArray)+5;
         heap=(struct PercorsoNode *) realloc(heap, (*lunghezzaArray));
     }
 
-    //facciamo "spazio" per aggiungere il nuovo nodo
-    while (indice>0 && nodoDaAggiungere.f<heap[(int) ((indice-1)/2)].f){
-        //sistemiamo gli altri nodi
-        heap[indice]=heap[(int) ((indice-1)/2)];
-        indice=(int) ((indice-1)/2);
-    }
-    heap[indice]=nodoDaAggiungere;
-
-    (*dimensione)=++(*dimensione);
+    //aggiunta nodo in fondo allo Heap
+    heap[(*dimensione)]=nodoDaAggiungere;
+    //sistemiamo lo Heap
+    sistemareInserimentoNelloHeap(heap, *dimensione);
+    //aumentiamo il numero di elementi nello Heap
+    ++(*dimensione);
 }
 
 /**
@@ -729,19 +750,21 @@ void inserimentoNelloHeap(struct PercorsoNode heap[], unsigned int *dimensione, 
  * @return il nodo minimo presente nello Heap.
  */
 struct PercorsoNode estraiMinimoDalloHeap(struct PercorsoNode heap[], unsigned int *dimensione){
-    //TODO il minimo andrebbe tolto dallo Heap
     /**
-     * Nodo minimo nello Heap da ritornare.
+     * Nodo minimo presente nello Heap da ritornare e da eliminare da esso.
      */
     struct PercorsoNode nodoMinimo=heap[0];
 
-    //sostituisce la radice con l'ultimo elemento nello Heap
-    (*dimensione)=--(*dimensione);
-    heap[0]=heap[(int) (*dimensione)];
-    //sistema lo Heap
-    minHeapify(heap, *dimensione, 0);
 
-    //ritorna il nodo minimo
+    //sostituzione della radice con l'ultimo nodo
+    heap[0]=heap[(*dimensione)-1];
+    //riduci dimensione dello Heap
+    --(*dimensione);
+
+    //sistema lo Heap
+    minHeapify(heap, dimensione, 0);
+
+    //ritorna il minimo
     return nodoMinimo;
 }
 
@@ -908,10 +931,10 @@ int aStarInAvanti(struct ArrayNodeStazione stazioni[], int numeroStazioni, int p
         }
 
         //aggiungo nodo corrente all'Array dei nodi visitati
-        visitati[corrente.distanza-partenza]=1; //TODO qua sembra che vada in segmentation fault
+        visitati[corrente.distanza-partenza]=1;
 
         //esamino i vicini del nodo corrente
-        for (int i = 0; i <= (arrivo-partenza+1); ++i) {
+        for (int i = 0; i < (arrivo-partenza+1); ++i) {
             //nodo deve essere stato visitato AND NON è quello che stiamo controllando adesso
             if(!visitati[i] && i!=corrente.distanza-partenza){
                 if(stazioni[i].distanza!=0) {
@@ -926,7 +949,7 @@ int aStarInAvanti(struct ArrayNodeStazione stazioni[], int numeroStazioni, int p
                          * Nodo che rappresenta il successivo rispetto a quello controllato adesso.
                          */
                         struct PercorsoNode successivo;
-                        successivo.distanza = i;
+                        successivo.distanza = stazioni[i].distanza;
                         successivo.g = corrente.g + distanza;
                         successivo.h = distanzaEuclideaEuristica(stazioni[i].distanza,
                                                                  stazioni[arrivo - partenza].distanza);
