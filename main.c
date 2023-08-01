@@ -985,6 +985,14 @@ int aStarInAvanti(struct ArrayNodeStazione stazioni[], int numeroStazioni, int p
      * Indici per i for.
      */
     int i=0;
+    /**
+     * Distanza (ID) stazione vicino a quella corrente.
+     */
+    unsigned int distanzaVicino=0;
+    /**
+     * Autonomia massima stazione corrente.
+     */
+    unsigned int autonomiaMassimaCorrente=0;
 
     //inizializzazione open e close set
     for (int j = 0; j < numeroStazioni; ++j) {
@@ -1022,11 +1030,11 @@ int aStarInAvanti(struct ArrayNodeStazione stazioni[], int numeroStazioni, int p
         }
 
         indiceVicino=indiceStazioneCorrente+1;
-        unsigned int ciao=stazioni[indiceVicino].distanza;
-        unsigned int ciaociao=stazioni[indiceStazioneCorrente].autonomiaMassima;
-        ciaociao=ciaociao+corrente.distanza;
+        distanzaVicino=stazioni[indiceVicino].distanza;
+        autonomiaMassimaCorrente=stazioni[indiceStazioneCorrente].autonomiaMassima;
+        autonomiaMassimaCorrente+=corrente.distanza;
         //per ogni nodo vicino ==> raggiungibile
-        while(ciao<=ciaociao){
+        while(distanzaVicino <= autonomiaMassimaCorrente){
             //calcolo costi
             h= distanzaEuclideaEuristica(corrente.distanza, stazioni[indiceVicino].distanza);
             g=corrente.g+h;
@@ -1068,7 +1076,11 @@ int aStarInAvanti(struct ArrayNodeStazione stazioni[], int numeroStazioni, int p
 
             //guardiamo il prossimo vicino
             ++indiceVicino;
-            ciao=stazioni[indiceVicino].distanza;
+            //se abbiamo raggiunto il numeroStazioni (parte da 1) dobbiamo interrompere la ricerca nelle stazioni vicine
+            if(indiceVicino==numeroStazioni){
+                break;
+            }
+            distanzaVicino=stazioni[indiceVicino].distanza;
         }
     }
 
@@ -1151,8 +1163,13 @@ void stampaPercorso(int numeroDiStazioni, struct PercorsoNode *percorso, unsigne
     fermate[numeroDiFermate]=partenza;
     ++numeroDiFermate;
 
+    printf("Percorso ");
+    for (int i = 0; i < numeroDiFermate; ++i) {
+        printf("%d ", percorso[i].distanza);
+    }
+
     //stampa le stazioni nell'ordine giusto
-    for (int i = numeroDiFermate-1; i > 1 ; --i) {
+    for (int i = numeroDiFermate-1; i > 0 ; --i) {
         printf("%d ", fermate[i]);
     }
     printf("%d\n", arrivo);
@@ -1187,10 +1204,17 @@ void AggiungiStazione(){
      * Autonomia massima presente nel parco auto.
      */
     unsigned int maxAutonomia=0;
+    /**
+     * Serve per far ritornare la scanf, se no NON compila.
+     */
+    int returnScanf=0;
 
 
     //lettura distanza della stazione da aggiungere
-    scanf("%d", &distanza);
+    returnScanf=scanf("%d", &distanza);
+    if(returnScanf==EOF){
+        return;
+    }
 
     //stazione già presente
     if(StazioneGiaPresente(autostrada, distanza)==1){
@@ -1198,15 +1222,24 @@ void AggiungiStazione(){
         printf("non aggiunta\n");
 
         //devo comunque leggere le auto inserite in input altrimenti restano nel buffer
-        scanf("%d", &numeroAuto);
+        returnScanf=scanf("%d", &numeroAuto);
+        if(returnScanf==EOF){
+            return;
+        }
         for (int i = 0; i < numeroAuto; ++i) {
-            scanf("%d", &autonomiaAuto);
+            returnScanf=scanf("%d", &autonomiaAuto);
+            if(returnScanf==EOF){
+                return;
+            }
         }
     }
     //stazione NON presente
     else{
         //leggi numero di macchine che bisogna aggiungere alla stazione
-        scanf("%d", &numeroAuto);
+        returnScanf=scanf("%d", &numeroAuto);
+        if(returnScanf==EOF){
+            return;
+        }
 
         //crea il parco auto
         parcoAuto= creaParcoAuto(DIMENSIONE_INIZIALE_PARCO_AUTO);
@@ -1214,7 +1247,10 @@ void AggiungiStazione(){
         //aggiungi auto con la loro chiave al parco auto
         for (int i = 0; i < numeroAuto; ++i) {
             //leggi chiave auto da aggiungere al parco auto
-            scanf("%d", &autonomiaAuto);
+            returnScanf=scanf("%d", &autonomiaAuto);
+            if(returnScanf==EOF){
+                return;
+            }
 
             //salviamo il valore massimo di autonomia
             if(autonomiaAuto>maxAutonomia){
@@ -1245,10 +1281,17 @@ void AggiungiAuto(){
      * Autonomia dell'auto da aggiungere alla stazione
      */
     unsigned int autonomiaAutoDaAggiungere=0;
+    /**
+     * Serve per far ritornare la scanf, se no NON compila.
+     */
+    int returnScanf=0;
 
 
     //lettura distanzaStazione della stazione a cui aggiungere una macchina
-    scanf("%d", &distanzaStazione);
+    returnScanf=scanf("%d", &distanzaStazione);
+    if(returnScanf==EOF){
+        return;
+    }
 
     //stazione NON presente
     if(StazioneGiaPresente(autostrada, distanzaStazione)==0){
@@ -1256,7 +1299,10 @@ void AggiungiAuto(){
         printf("non aggiunta\n");
 
         //devo comunque leggere l'auto inserita in input altrimenti resta nel buffer
-        scanf("%d", &autonomiaAutoDaAggiungere);
+        returnScanf=scanf("%d", &autonomiaAutoDaAggiungere);
+        if(returnScanf==EOF){
+            return;
+        }
     }
     //stazione presente
     else{
@@ -1266,7 +1312,10 @@ void AggiungiAuto(){
         struct HashNodeStazione *stazione= ricercaStazione(autostrada, distanzaStazione);
 
         //leggi chiave auto da aggiungere
-        scanf("%d", &autonomiaAutoDaAggiungere);
+        returnScanf=scanf("%d", &autonomiaAutoDaAggiungere);
+        if(returnScanf==EOF){
+            return;
+        }
 
         //distanza massima percorribile da quella stazione
         if(stazione->autonomiaMassima<autonomiaAutoDaAggiungere){
@@ -1289,9 +1338,16 @@ void DemolisciStazione(){
     * Distanza dall'origine della stazione
     */
     unsigned int distanza=0;
+    /**
+     * Serve per far ritornare la scanf, se no NON compila.
+     */
+    int returnScanf=0;
 
     //lettura distanza della stazione da demolire
-    scanf("%d", &distanza);
+    returnScanf=scanf("%d", &distanza);
+    if(returnScanf==EOF){
+        return;
+    }
 
     //Se stazione NON presente
     if(StazioneGiaPresente(autostrada, distanza)==0){
@@ -1320,10 +1376,17 @@ void RottamaAuto(){
      * Autonomia dell'auto da rottamare dalla stazione
      */
     unsigned int autonomiaAutoDaRottamare=0;
+    /**
+     * Serve per far ritornare la scanf, se no NON compila.
+     */
+    int returnScanf=0;
 
 
     //lettura distanzaStazione della stazione da cui rottamare una macchina
-    scanf("%d", &distanzaStazione);
+    returnScanf=scanf("%d", &distanzaStazione);
+    if(returnScanf==EOF){
+        return;
+    }
 
     //Se stazione NON presente
     if(StazioneGiaPresente(autostrada, distanzaStazione)==0){
@@ -1331,7 +1394,10 @@ void RottamaAuto(){
         printf("non rottamata\n");
 
         //devo comunque leggere le auto inserite in input altrimenti restano nel buffer
-        scanf("%d", &autonomiaAutoDaRottamare);
+        returnScanf=scanf("%d", &autonomiaAutoDaRottamare);
+        if(returnScanf==EOF){
+            return;
+        }
     }
     //stazione presente
     else{
@@ -1341,7 +1407,10 @@ void RottamaAuto(){
         struct HashNodeStazione *stazione= ricercaStazione(autostrada, distanzaStazione);
 
         //leggi chiave auto da rottamare
-        scanf("%d", &autonomiaAutoDaRottamare);
+        returnScanf=scanf("%d", &autonomiaAutoDaRottamare);
+        if(returnScanf==EOF){
+            return;
+        }
 
         //Se auto NON presente nel parco auto della stazione
         if(ricercaAuto(stazione->parcoAuto, autonomiaAutoDaRottamare)==0){
@@ -1373,10 +1442,20 @@ void PianificaPercorso(){
      * Distanza dall'origine della stazione di arrivo
      */
     int distanzaStazioneArrivo=0;
+    /**
+     * Serve per far ritornare la scanf, se no NON compila.
+     */
+    int returnScanf=0;
 
     //lettura distanza delle stazioni di partenza e di arrivo
-    scanf("%d", &distanzaStazionePartenza);
-    scanf("%d", &distanzaStazioneArrivo);
+    returnScanf=scanf("%d", &distanzaStazionePartenza);
+    if(returnScanf==EOF){
+        return;
+    }
+    returnScanf=scanf("%d", &distanzaStazioneArrivo);
+    if(returnScanf==EOF){
+        return;
+    }
 
     //stazione di partenza NON ha macchine
     if(ricercaStazione(autostrada, distanzaStazionePartenza)->autonomiaMassima==0){
@@ -1413,6 +1492,10 @@ void PianificaPercorso(){
         else{
             stampaPercorso(numeroFermate, percorso, distanzaStazionePartenza, distanzaStazioneArrivo);
         }
+
+        //deallochiamo memoria che NON ci serve più per i prossimi percorsi
+        free(stazioniIntermedie);
+        free(percorso);
     }
 }
 
