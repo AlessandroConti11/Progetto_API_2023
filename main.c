@@ -1273,7 +1273,7 @@ struct PercorsoNode closeSet[4*numeroStazioni];
     //fino a che ci sono nodi da valutare
     while (openSize>0){
         //estrazione nodo minimo dall'openSet --> deve avere minima la .f
-        corrente= popMin(openSet, &openSize);
+        corrente= popMax(openSet, &openSize);
         //aggiunta nodo corrente al closeSet
         //TODO per debug
 //        if(closeSize!=0 && closeSize%numeroStazioni==0){
