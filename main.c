@@ -293,7 +293,7 @@ void aggiungiAuto(struct HashTableParcoAuto *parcoAuto, unsigned int autonomia){
 /**
  * Elimina l'auto richiesta dal parco auto.
  *
- * @param parcoAuto il parco auto che contine la macchina da eliminare.
+ * @param parcoAuto il parco auto che contiene la macchina da eliminare.
  * @param autonomia la macchina da eliminare.
  */
 void eliminaAuto(struct HashTableParcoAuto *parcoAuto, unsigned int autonomia){
@@ -566,7 +566,7 @@ void eliminaStazione(struct HashTableAutostrada *htAutostrada, unsigned int dist
     }
 
     //dealloca il HashNode
-    free(corrente->parcoAuto);
+    free(corrente->parcoAuto); //TODO forse dovrei deallocare anche le varia macchine nel parco auto???? - da vedere
     free(corrente);
     //riduciamo il numero di elementi presenti nella HashTable
     htAutostrada->dimensione--;
@@ -588,6 +588,7 @@ struct HashNodeStazione *ricercaStazione(struct HashTableAutostrada *htAutostrad
      * HashNode corrente.
      */
     struct HashNodeStazione *corrente=htAutostrada->table[indice];
+
 
     //fino a che ci sono altri HashNode nella posizione richiesta
     while(corrente!=NULL){
@@ -875,7 +876,6 @@ struct ArrayNodeStazione *tutteLeStazioniAllIndietro(unsigned int partenza, unsi
         }
     }
 
-
     //numero di stazioni tra quella di partenza e quella d'arrivo
     (*numeroDiStazioni)=posizioneArray;
     //stazioni intermedie tra quella di partenza e quella di arrivo
@@ -911,33 +911,16 @@ double distanzaEuclideaEuristica(unsigned int a, unsigned int b){
     return abs((int) ((int) b - (int) a));
 }
 
-//TODO prova per percorso all'indietro
-double scoreStazioneVicino(int partenza, int arrivo, struct ArrayNodeStazione stazioni[], int numeroStazioni){
+/**
+ * Ritorna il punteggio che ha il percorso (dalla partenza all'arrivo) - ( -Distanza Euristica ).
+ *
+ * @param partenza punto di partenza.
+ * @param arrivo punto di arrivo.
+ * @return il punteggio che ha la stazione vicina.
+ */
+double punteggioPartenzaArrivo(int partenza, int arrivo){
     return -distanzaEuclideaEuristica(partenza, arrivo);
-    double min=1e9;
-    for (int i = 0; i < numeroStazioni; ++i) {
-        if(distanzaEuclideaEuristica(stazioni[i].distanza, arrivo)<min){
-            min=distanzaEuclideaEuristica(stazioni[i].distanza, arrivo);
-        }
-    }
-
-    if(min==0){
-        return 1e9;
-    }
-    else{
-        return (1/(min+ distanzaEuclideaEuristica((unsigned int)partenza, (unsigned int)arrivo)));
-    }
 }
-double stimaDistanza(unsigned int partenza, unsigned int arrivo){
-    return abs((int) arrivo-(int) partenza)*0.5;
-}
-double calcoloCostoDiStop(unsigned int partenza, unsigned int arrivo){
-    return abs((int) arrivo-(int) partenza)*0.5;
-}
-double calcoloCosto(unsigned int partenza, unsigned int arrivo){
-    return (abs((int) arrivo-(int) partenza)+ calcoloCostoDiStop(partenza, arrivo));
-}
-
 
 /**
  * Funzione che compara 2 nodi - comparazione tra distanza.
@@ -946,9 +929,8 @@ double calcoloCosto(unsigned int partenza, unsigned int arrivo){
  * @param b secondo nodo da comparare.
  * @return la comparazione.
  */
-int comparazioneInAvanti(const void *a, const void *b){ //TODO test
+int comparazioneInAvanti(const void *a, const void *b){
     return (int) (((struct PercorsoNode *)a)->distanza-((struct PercorsoNode *)b)->distanza);
-//    return (int) (((struct PercorsoNode *)a)->f - ((struct PercorsoNode *)b)->f);
 }
 
 /**
@@ -958,8 +940,7 @@ int comparazioneInAvanti(const void *a, const void *b){ //TODO test
  * @param b secondo nodo da comparare.
  * @return la comparazione.
  */
-int comparazioneAllIndietro(const void *a, const void *b){ //TODO test
-//    return (int) (((struct PercorsoNode *)a)->distanza-((struct PercorsoNode *)b)->distanza);
+int comparazioneAllIndietro(const void *a, const void *b){
     return (int) (((struct PercorsoNode *)a)->f - ((struct PercorsoNode *)b)->f);
 }
 
@@ -1025,31 +1006,40 @@ struct PercorsoNode popMax(struct PercorsoNode set[], int *setSize){
  * @return indice della stazione corrente.
  */
 int ricercaIndiceStazioneCorrente(struct ArrayNodeStazione stazione[], int numeroStazioni, struct PercorsoNode corrente){
-    //TODO farlo migliore --> in questo momento lui cerca da 0 in avanti
-    //ricerca indice della stazione corrente
-    for (int i = 0; i < numeroStazioni; ++i) {
-        if(stazione[i].distanza==corrente.distanza){
-            return i;
-        }
-    }
-    //NON trovato - NON dovrebbe succedere mai
-    return -1;
-}
+    /**
+     * Indice parte sinistra da controllare.
+     */
+    int sx=0;
+    /**
+     * Indice parte destra da controllare.
+     */
+    int dx=numeroStazioni-1;
+    /**
+     * Indice punto medio da controllare.
+     */
+    int medio=0;
 
-/**
- * Ritorna l'indice della posizione, nel set, del nodo corrente.
- *
- * @param set il set in cui ricercare.
- * @param setSize la dimensione del set.
- * @param corrente il nodo da ricercare.
- * @return indice del nodo corrente nel set.
- */
-int ricercaIndiceCorrenteNelSet(struct PercorsoNode set[], const int *setSize, struct PercorsoNode corrente){
-    for (int i = 0; i < (*setSize); ++i) {
-        if(set[i].distanza==corrente.distanza){
-            return i;
+
+    //fino a che sx è minore uguale a dx
+    while (sx<=dx){
+        //indice da controllare
+        medio=((int) sx+((int) ((dx-sx)/2)));
+
+        //controllo se il valore è uguale a quello cercato
+        if(stazione[medio].distanza==corrente.distanza){
+            return medio;
+        }
+        //il valore da ricercare si trova nella metà superiore
+        else if(stazione[medio].distanza<corrente.distanza){
+            sx=medio+1;
+        }
+        //il valore da ricercare si trova nella metà inferiore
+        else{
+            dx=medio-1;
         }
     }
+
+    //indice NON trovato
     return -1;
 }
 
@@ -1186,7 +1176,7 @@ int aStarInAvanti(struct ArrayNodeStazione stazioni[], int numeroStazioni, int p
 
             //il vicino è già stato visitato - è nel closeSet
             trovato=0;
-            for (i = 0; i < closeSize; ++i) {
+            for (i = 0; i < closeSize; ++i) { //TODO lui è ordinato in qualche modo???
                 //il vicino è già stato visitato
                 if(closeSet[i].distanza==stazioni[indiceVicino].distanza){
                     trovato=1;
@@ -1213,7 +1203,7 @@ int aStarInAvanti(struct ArrayNodeStazione stazioni[], int numeroStazioni, int p
 
             //il vicino è già presente tra quelli da controllare - è nell'openSet
             trovato=0;
-            for (i = 0; i < openSize; ++i) {
+            for (i = 0; i < openSize; ++i) { //TODO lui è ordinato in qualche modo???
                 //il vicino è già stato visitato
                 if(openSet[i].distanza==stazioni[indiceVicino].distanza){
                     trovato=1;
@@ -1344,7 +1334,6 @@ int aStarAllIndietro(struct ArrayNodeStazione stazioni[], int numeroStazioni, in
             closeSet=(struct PercorsoNode *) realloc(closeSet, (nuovaDimensioneCloseSet*sizeof(struct PercorsoNode)));
         }
         closeSet[closeSize]=corrente;
-//        printf(" -> Aggiunta al Close: %d, %f\n", corrente.distanza, corrente.f);
         ++closeSize;
 
 
@@ -1361,12 +1350,6 @@ int aStarAllIndietro(struct ArrayNodeStazione stazioni[], int numeroStazioni, in
             free(*percorso);
             *percorso=daRitornare;
 
-//            printf(" --> CLOSESET ");
-//            for (int j = 0; j < closeSize; ++j) {
-//                printf("(%d. %d, %d - %f) - ", j, closeSet[j].distanza, closeSet[j].genitore, closeSet[j].f);
-//            }
-//            printf("\n");
-
             free(openSet);
             free(closeSet);
             return closeSize;
@@ -1379,7 +1362,8 @@ int aStarAllIndietro(struct ArrayNodeStazione stazioni[], int numeroStazioni, in
         //per ogni nodo vicino ==> raggiungibile
         while(distanzaVicino >= autonomiaMassimaCorrente){
             //calcolo costi
-            h= distanzaEuclideaEuristica(corrente.distanza, stazioni[indiceVicino].distanza)+ scoreStazioneVicino(partenza, arrivo, stazioni, numeroStazioni);
+            h= distanzaEuclideaEuristica(corrente.distanza, stazioni[indiceVicino].distanza) +
+                    punteggioPartenzaArrivo(partenza, arrivo);
             g=corrente.g+h;
             f=g+h;
 
@@ -1426,7 +1410,6 @@ int aStarAllIndietro(struct ArrayNodeStazione stazioni[], int numeroStazioni, in
                     openSet=(struct PercorsoNode *) realloc(openSet, (nuovaDimensioneOpenSet* sizeof(struct PercorsoNode)));
                 }
                 openSet[openSize++]=vicino;
-//                printf(" -> aggiunta all'Open: (%d, %f) da (%d, %f)\n", vicino.distanza, vicino.f, corrente.distanza, corrente.f);
             }
 
             //guardiamo il prossimo vicino
@@ -1501,20 +1484,12 @@ void stampaPercorso(int numeroDiStazioni, struct PercorsoNode *percorso, unsigne
     fermate[numeroDiFermate]=partenza;
     ++numeroDiFermate;
 
-    //TODO da togliere
-//    printf("Percorso ");
-//    for (int i = 0; i < numeroDiFermate; ++i) {
-//        printf("%d ", percorso[i].distanza);
-//    }
-
     //stampa le stazioni nell'ordine giusto
     for (int i = numeroDiFermate-1; i > 0 ; --i) {
         printf("%d ", fermate[i]);
     }
     printf("%d\n", arrivo);
 }
-
-
 
 
 
@@ -1561,16 +1536,9 @@ void AggiungiStazione(){
         printf("non aggiunta\n");
 
         //devo comunque leggere le auto inserite in input altrimenti restano nel buffer
-        returnScanf=scanf("%d", &numeroAuto);
-        if(returnScanf==EOF){
-            return;
-        }
-        for (int i = 0; i < numeroAuto; ++i) {
-            returnScanf=scanf("%d", &autonomiaAuto);
-            if(returnScanf==EOF){
-                return;
-            }
-        }
+        do {
+            returnScanf= getc_unlocked(stdin);
+        } while (returnScanf!='\n');
     }
     //stazione NON presente
     else{
@@ -1638,7 +1606,9 @@ void AggiungiAuto(){
         printf("non aggiunta\n");
 
         //devo comunque leggere l'auto inserita in input altrimenti resta nel buffer
-        returnScanf=scanf("%d", &autonomiaAutoDaAggiungere);
+        do {
+            returnScanf= getc_unlocked(stdin);
+        } while (returnScanf!='\n');
         if(returnScanf==EOF){
             return;
         }
@@ -1733,10 +1703,9 @@ void RottamaAuto(){
         printf("non rottamata\n");
 
         //devo comunque leggere le auto inserite in input altrimenti restano nel buffer
-        returnScanf=scanf("%d", &autonomiaAutoDaRottamare);
-        if(returnScanf==EOF){
-            return;
-        }
+        do {
+            returnScanf= getc_unlocked(stdin);
+        } while (returnScanf!='\n');
     }
     //stazione presente
     else{
@@ -1758,11 +1727,12 @@ void RottamaAuto(){
         }
         //auto presente nel parco auto della stazione
         else{
+            //eliminiamo l'auto dal parco auto della stazione
+            eliminaAuto(stazione->parcoAuto, autonomiaAutoDaRottamare);
+
             //salviamo la nuova autonomia massima
             stazione->autonomiaMassima= ricercaMassimaAutonomia(stazione->parcoAuto, stazione->parcoAuto->capacita);
 
-            //eliminiamo l'auto dal parco auto della stazione
-            eliminaAuto(stazione->parcoAuto, autonomiaAutoDaRottamare);
             //auto rottamata
             printf("rottamata\n");
         }
@@ -1795,8 +1765,6 @@ void PianificaPercorso(){
     if(returnScanf==EOF){
         return;
     }
-
-//    printf(" --> %d to %d <--\n", distanzaStazionePartenza, distanzaStazioneArrivo); TODO per debug comoda
 
     //stazione di partenza NON ha macchine
     if(ricercaStazione(autostrada, distanzaStazionePartenza)->autonomiaMassima==0){
@@ -1908,11 +1876,7 @@ int main() {
 }
 
 
-
-
-
-/*
- * tutteLeStazioni --> per ridurre memoria si potrebbe fare realloc alla fine prima di restituire l'Array
- *
- * aStar --> controllare tutti gli indici degli array
+/*TODO
+ * anziché lista popMin O(n) --> heap popMin O(log n) DA DEFINIZIONE
+ * ricerca nel close & open fare array di boolean ???
  */
