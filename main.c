@@ -997,15 +997,15 @@ struct PercorsoNode popMax(struct PercorsoNode set[], int *setSize){
 }
 
 /**
- * Ritorna l'indice della stazione corrente - indice tra le stazioni.
+ * Ritorna l'indice della stazione corrente - ordine crescente.
  *
- * @param stazione le stazioni presenti tra il nodo di partenza e quello di arrivo.
+ * @param stazione le stazioni presenti tra il nodo di partenza e quello di arrivo - ordine crescente.
  * @param numeroStazioni numero di stazioni intermedie.
  * @param corrente stazione corrente.
  * @param indicePrecedente indice della stazione precedente a quella corrente attualmente.
  * @return indice della stazione corrente.
  */
-int ricercaIndiceStazioneCorrente(struct ArrayNodeStazione stazione[], int numeroStazioni, struct PercorsoNode corrente){
+int ricercaIndiceStazioneCorrenteInAvanti(struct ArrayNodeStazione stazione[], int numeroStazioni, struct PercorsoNode corrente){
     /**
      * Indice parte sinistra da controllare.
      */
@@ -1034,6 +1034,52 @@ int ricercaIndiceStazioneCorrente(struct ArrayNodeStazione stazione[], int numer
             sx=medio+1;
         }
         //il valore da ricercare si trova nella metà inferiore
+        else{
+            dx=medio-1;
+        }
+    }
+
+    //indice NON trovato
+    return -1;
+}
+/**
+ * Ritorna l'indice della stazione corrente - ordine decrescente.
+ *
+ * @param stazione le stazioni presenti tra il nodo di partenza e quello di arrivo - ordine decrescente.
+ * @param numeroStazioni numero di stazioni intermedie.
+ * @param corrente stazione corrente.
+ * @param indicePrecedente indice della stazione precedente a quella corrente attualmente.
+ * @return indice della stazione corrente.
+ */
+int ricercaIndiceStazioneCorrenteAllIndietro(struct ArrayNodeStazione stazione[], int numeroStazioni, struct PercorsoNode corrente){
+    /**
+     * Indice parte sinistra da controllare.
+     */
+    int sx=0;
+    /**
+     * Indice parte destra da controllare.
+     */
+    int dx=numeroStazioni-1;
+    /**
+     * Indice punto medio da controllare.
+     */
+    int medio=0;
+
+
+    //fino a che sx è minore uguale a dx
+    while (sx<=dx){
+        //indice da controllare
+        medio=((int) sx+((int) ((dx-sx)/2)));
+
+        //controllo se il valore è uguale a quello cercato
+        if(stazione[medio].distanza==corrente.distanza){
+            return medio;
+        }
+            //il valore da ricercare si trova nella metà superiore
+        else if(stazione[medio].distanza>corrente.distanza){
+            sx=medio+1;
+        }
+            //il valore da ricercare si trova nella metà inferiore
         else{
             dx=medio-1;
         }
@@ -1146,7 +1192,7 @@ int aStarInAvanti(struct ArrayNodeStazione stazioni[], int numeroStazioni, int p
 
 
         //indice della stazione corrente nell'Array delle stazioni
-        indiceStazioneCorrente= ricercaIndiceStazioneCorrente(stazioni, numeroStazioni, corrente);
+        indiceStazioneCorrente= ricercaIndiceStazioneCorrenteInAvanti(stazioni, numeroStazioni, corrente);
 
         //se siamo arrivati alla fine
         if(corrente.distanza==arrivo){
@@ -1338,7 +1384,7 @@ int aStarAllIndietro(struct ArrayNodeStazione stazioni[], int numeroStazioni, in
 
 
         //indice della stazione corrente nell'Array delle stazioni
-        indiceStazioneCorrente= ricercaIndiceStazioneCorrente(stazioni, numeroStazioni, corrente);
+        indiceStazioneCorrente= ricercaIndiceStazioneCorrenteAllIndietro(stazioni, numeroStazioni, corrente);
 
         //se siamo arrivati alla fine
         if(corrente.distanza==arrivo){
