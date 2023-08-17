@@ -157,6 +157,53 @@ struct HashTableAutostrada *autostrada=NULL;
 
 
 
+//COMPARAZIONE
+/**
+ * Funzione che compara 2 nodi.
+ *
+ * @param a primo nodo da comparare.
+ * @param b secondo nodo da comparare.
+ * @return la comparazioneAvanti.
+ */
+int comparazioneAvanti(const void *a, const void *b){
+    return (int) (((struct PercorsoNode *)a)->distanza-((struct PercorsoNode *)b)->distanza);
+}
+
+/**
+ * Funzione che compara 2 nodi.
+ *
+ * @param a primo nodo da comparare.
+ * @param b secondo nodo da comparare.
+ * @return la comparazioneAvanti.
+ */
+int comparazioneIndietro(const void *a, const void *b){
+    return (int) (((struct PercorsoNode *)b)->distanza-((struct PercorsoNode *)a)->distanza);
+}
+
+/**
+ * Funzione che compara 2 nodi - comparazione tra distanza.
+ *
+ * @param a primo nodo da comparare.
+ * @param b secondo nodo da comparare.
+ * @return la comparazione.
+ */
+int comparazioneInAvanti(const void *a, const void *b){
+    return (int) (((struct PercorsoNode *)a)->distanza-((struct PercorsoNode *)b)->distanza);
+}
+
+/**
+ * Funzione che compara 2 nodi - comparazione tra f.
+ *
+ * @param a primo nodo da comparare.
+ * @param b secondo nodo da comparare.
+ * @return la comparazione.
+ */
+int comparazioneAllIndietro(const void *a, const void *b){
+    return (int) (((struct PercorsoNode *)a)->f - ((struct PercorsoNode *)b)->f);
+}
+
+
+
 //GESTIONE HASH
 /**
  * Funzione di hash --> ritorna la posizione dato il valore richiesto.
@@ -253,7 +300,7 @@ void reHashParcoAuto(struct HashTableParcoAuto *parcoAuto){
         }
     }
 
-    //eliminiamo la vecchia stazioni
+    //eliminiamo il vecchio parco auto
     free(parcoAuto->autoNode);
     //aggiungiamo la nuova stazioni
     parcoAuto->autoNode=nuovaHashTable;
@@ -324,7 +371,7 @@ void eliminaAuto(struct HashTableParcoAuto *parcoAuto, unsigned int autonomia){
     if(corrente==NULL){
         return;
     }
-        //chiave trovata
+    //chiave trovata
     else{
         //il nodo da eliminare è il primo della lista presente nella posizione indicata
         if(precedente==NULL){
@@ -366,7 +413,7 @@ int ricercaAuto(struct HashTableParcoAuto *parcoAuto, unsigned int autonomia){
         if(corrente->autonomia==autonomia){
             return 1;
         }
-            //guardiamo nel prossimo HashNode
+        //guardiamo nel prossimo HashNode
         else{
             corrente=corrente->successivo;
         }
@@ -480,7 +527,7 @@ void reHashAutostrada(struct HashTableAutostrada *htAutostrada){
         }
     }
 
-    //eliminiamo la vecchia stazioni
+    //eliminiamo le vecchie stazioni
     free(htAutostrada->stazioni);
     //aggiungiamo la nuova stazioni
     htAutostrada->stazioni=nuovaHashTable;
@@ -554,7 +601,7 @@ void eliminaStazione(struct HashTableAutostrada *htAutostrada, unsigned int dist
     if(stazioneCorrente == NULL){
         return;
     }
-        //chiave trovata
+    //chiave trovata
     else{
         //il nodo da eliminare è il primo della lista presente nella posizione indicata
         if(stazionePrecedente == NULL){
@@ -566,21 +613,21 @@ void eliminaStazione(struct HashTableAutostrada *htAutostrada, unsigned int dist
         }
     }
 
-    //elimina macchine
-    for (int i = 0; i < stazioneCorrente->parcoAuto->capacita; ++i) {
-        /**
-         * Auto corrente presente in posizione i nel parco auto.
-         */
-        struct HashNodeAuto *corrente=stazioneCorrente->parcoAuto->autoNode[i];
-        while (corrente!=NULL){
-            /**
-             * Nodo precedente da eliminare.
-             */
-            struct HashNodeAuto *precedente=corrente;
-            corrente=corrente->successivo;
-            free(precedente);
-        }
-    }
+    //TODO elimina macchine - sembra NON essenziale - se da execution killed il problema è che manca questo
+//    for (int i = 0; i < stazioneCorrente->parcoAuto->capacita; ++i) {
+//        /**
+//         * Auto corrente presente in posizione i nel parco auto.
+//         */
+//        struct HashNodeAuto *corrente=stazioneCorrente->parcoAuto->autoNode[i];
+//        while (corrente!=NULL){
+//            /**
+//             * Nodo precedente da eliminare.
+//             */
+//            struct HashNodeAuto *precedente=corrente;
+//            corrente=corrente->successivo;
+//            free(precedente);
+//        }
+//    }
     //elimina parcoAuto
     free(stazioneCorrente->parcoAuto->autoNode);
     //elimina hashTable parco auto
@@ -615,7 +662,7 @@ struct HashNodeStazione *ricercaStazione(struct HashTableAutostrada *htAutostrad
         if(corrente->distanza==distanza){
             return corrente;
         }
-            //guardiamo nel prossimo HashNode
+        //guardiamo nel prossimo HashNode
         else{
             corrente=corrente->successivo;
         }
@@ -648,7 +695,7 @@ int StazioneGiaPresente(struct HashTableAutostrada *htAutostrada, unsigned int d
         if(corrente->distanza==distanza){
             return 1;
         }
-            //guardiamo nel prossimo HashNode
+        //guardiamo nel prossimo HashNode
         else{
             corrente=corrente->successivo;
         }
@@ -787,53 +834,6 @@ struct PercorsoNode estraiMinimoDalloHeap(struct PercorsoNode heap[], unsigned i
 
     //ritorna il minimo
     return nodoMinimo;
-}
-
-
-
-//COMPARAZIONE
-/**
- * Funzione che compara 2 nodi.
- *
- * @param a primo nodo da comparare.
- * @param b secondo nodo da comparare.
- * @return la comparazioneAvanti.
- */
-int comparazioneAvanti(const void *a, const void *b){
-    return (int) (((struct PercorsoNode *)a)->distanza-((struct PercorsoNode *)b)->distanza);
-}
-
-/**
- * Funzione che compara 2 nodi.
- *
- * @param a primo nodo da comparare.
- * @param b secondo nodo da comparare.
- * @return la comparazioneAvanti.
- */
-int comparazioneIndietro(const void *a, const void *b){
-    return (int) (((struct PercorsoNode *)b)->distanza-((struct PercorsoNode *)a)->distanza);
-}
-
-/**
- * Funzione che compara 2 nodi - comparazione tra distanza.
- *
- * @param a primo nodo da comparare.
- * @param b secondo nodo da comparare.
- * @return la comparazione.
- */
-int comparazioneInAvanti(const void *a, const void *b){
-    return (int) (((struct PercorsoNode *)a)->distanza-((struct PercorsoNode *)b)->distanza);
-}
-
-/**
- * Funzione che compara 2 nodi - comparazione tra f.
- *
- * @param a primo nodo da comparare.
- * @param b secondo nodo da comparare.
- * @return la comparazione.
- */
-int comparazioneAllIndietro(const void *a, const void *b){
-    return (int) (((struct PercorsoNode *)a)->f - ((struct PercorsoNode *)b)->f);
 }
 
 
@@ -1153,7 +1153,7 @@ double punteggioPartenzaArrivo(int partenza, int arrivo){
  * @return il nodo minimo.
  */
 struct PercorsoNode popMin(struct PercorsoNode set[], int *setSize){
-    //ordinamento in base alla comparazioneAvanti
+    //ordinamento in base alla comparazioneInAvanti
     qsort(set, *setSize, sizeof(struct PercorsoNode), comparazioneInAvanti);
     /**
      * Nodo minimo da ritornare.
@@ -1178,7 +1178,7 @@ struct PercorsoNode popMin(struct PercorsoNode set[], int *setSize){
  * @return il nodo massimo.
  */
 struct PercorsoNode popMax(struct PercorsoNode set[], int *setSize){
-    //ordinamento in base alla comparazioneAvanti
+    //ordinamento in base alla comparazioneAllIndietro
     qsort(set, *setSize, sizeof(struct PercorsoNode), comparazioneAllIndietro);
     /**
      * Nodo massimo da ritornare.
@@ -1198,7 +1198,7 @@ struct PercorsoNode popMax(struct PercorsoNode set[], int *setSize){
 }
 
 /**
- * Ritorna l'indice della stazione corrente - ordine crescente.
+ * Ritorna l'indice della stazione corrente - ordinamento crescente.
  *
  * @param stazione le stazioni presenti tra il nodo di partenza e quello di arrivo - ordine crescente.
  * @param numeroStazioni numero di stazioni intermedie.
@@ -1244,7 +1244,7 @@ int ricercaIndiceStazioneCorrenteInAvanti(struct ArrayNodeStazione stazione[], i
     return -1;
 }
 /**
- * Ritorna l'indice della stazione corrente - ordine decrescente.
+ * Ritorna l'indice della stazione corrente - ordinamento decrescente.
  *
  * @param stazione le stazioni presenti tra il nodo di partenza e quello di arrivo - ordine decrescente.
  * @param numeroStazioni numero di stazioni intermedie.
@@ -1401,8 +1401,11 @@ int aStarInAvanti(struct ArrayNodeStazione stazioni[], int numeroStazioni, int p
              * Per reallocare il percorso.
              */
             struct PercorsoNode *daRitornare=(struct PercorsoNode *) malloc((closeSize* sizeof(struct PercorsoNode)));
+            //copia il closeSet che contiene il percorso
             memcpy(daRitornare, closeSet, (closeSize* sizeof(struct PercorsoNode)));
+            //libera la memoria occupata precedentemente
             free(*percorso);
+            //salva il percorso
             *percorso=daRitornare;
 
             free(openSet);
@@ -1593,8 +1596,11 @@ int aStarAllIndietro(struct ArrayNodeStazione stazioni[], int numeroStazioni, in
              * Per reallocare il percorso.
              */
             struct PercorsoNode *daRitornare=(struct PercorsoNode *) malloc((closeSize* sizeof(struct PercorsoNode)));
+            //copia il closeSet che contiene il percorso
             memcpy(daRitornare, closeSet, (closeSize* sizeof(struct PercorsoNode)));
+            //libera la memoria occupata precedentemente
             free(*percorso);
+            //salva il percorso
             *percorso=daRitornare;
 
             free(openSet);
@@ -1704,7 +1710,7 @@ int aStar(struct ArrayNodeStazione stazioni[], int numeroStazioni, int partenza,
  * @param partenza distanza stazione di partenza.
  * @param arrivo distanza stazione di arrivo.
  */
-void stampaPercorso(int numeroDiStazioni, struct PercorsoNode *percorso, unsigned int partenza, unsigned int arrivo){
+void stampaPercorso(int numeroDiStazioni, struct PercorsoNode *percorso, unsigned int partenza, unsigned int arrivo){ //TODO si può fare meglio??
     /**
      * Stazione corrente.
      */
@@ -1713,12 +1719,11 @@ void stampaPercorso(int numeroDiStazioni, struct PercorsoNode *percorso, unsigne
      * Fermate effettivamente fatte.
      */
     unsigned int fermate[numeroDiStazioni];
-
-
     /**
      * Numero di fermate effettivamente fatte.
      */
     int numeroDiFermate=0;
+
 
     //fino a che NON siamo arrivati al nodo di partenza
     while (corrente.genitore!=-1){
@@ -1878,7 +1883,7 @@ void AggiungiAuto(){
             stazione->autonomiaMassima=autonomiaAutoDaAggiungere;
         }
 
-        //aggiungi auto al praco auto della stazione
+        //aggiungi auto al parco auto della stazione
         aggiungiAuto(stazione->parcoAuto, autonomiaAutoDaAggiungere);
 
         //auto aggiunta la parco auto
@@ -2034,7 +2039,7 @@ void PianificaPercorso(){
         /**
          * Percorso minimo dalla stazione di partenza fino a quella di arrivo.
          */
-        struct PercorsoNode *percorso=(struct PercorsoNode *) calloc(5*numeroDiStazioni, sizeof(struct PercorsoNode));
+        struct PercorsoNode *percorso=(struct PercorsoNode *) calloc(numeroDiStazioni, sizeof(struct PercorsoNode));
         /**
          * Numero di fermate che bisogna compiere nel percorso.
          */
@@ -2089,31 +2094,43 @@ void ProcessaComando(const char comando[]){
 }
 
 
+
+/**
+ * Deallocare tutta la memoria usata nel programma.
+ */
 void deallocaMemoria(){
     //per tutte le auto
     for (int i = 0; i < autostrada->capacita; ++i) {
         if(autostrada->stazioni[i]!=NULL){
             //per tutto il parco auto nella stazione
             for (int j = 0; j < autostrada->stazioni[i]->parcoAuto->capacita; ++j) {
+                /**
+                 * Nodo corrente - auto.
+                 */
                 struct HashNodeAuto *corrente=autostrada->stazioni[i]->parcoAuto->autoNode[j];
                 //elimina auto
                 while (corrente!=NULL){
+                    /**
+                     * Nodo successivo a quello corrente - auto.
+                     */
                     struct HashNodeAuto *successivo=corrente->successivo;
+                    //elimina auto
                     free(corrente);
                     corrente=successivo;
                 }
             }
+            //elimina parco auto dalla stazione
             free(autostrada->stazioni[i]->parcoAuto);
         }
-
     }
 
-    //per tutte le stazioni
+    //elimina tutte le stazioni
     free(autostrada->stazioni);
 
     //elimina autostrada
     free(autostrada);
 }
+
 
 
 //MAIN
@@ -2124,7 +2141,7 @@ void deallocaMemoria(){
  */
 int main() {
     /**
-     * Carattere per capire non abbiamo più niente da leggere da stIN.
+     * Carattere per capire non abbiamo più niente da leggere da stdIN.
      */
     int fine;
     /**
@@ -2145,14 +2162,11 @@ int main() {
         ProcessaComando(comando);
     }while(fine!=EOF); //se leggi EOF termina
 
-//    deallocaMemoria();
+//    deallocaMemoria(); TODO NON serve ma se servisse già c'è
     return 0;
 }
 
 
 /*TODO
  * aStar --> al posto di pila usare heap
- * tutteLeStazioni --> forse conviene girarsi tutta la HashTable???
- *                 --> fare i 2 casi: 1. numero di stazioni da controllare < numero di stazioni nell'autostrada
- *                                    2. numero di stazioni da controllare > numero di stazioni nell'autostrada
  */
