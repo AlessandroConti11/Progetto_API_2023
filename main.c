@@ -708,14 +708,15 @@ int StazioneGiaPresente(struct HashTableAutostrada *htAutostrada, unsigned int d
 
 
 //GESTIONE HEAP
+// MAX-HEAP
 /**
- * Utilizzata per mantenere corrette le proprietà dello Heap dopo un'eliminazione.
+ * Utilizzata per mantenere corrette le proprietà del Max-Heap dopo un'eliminazione.
  *
  * @param heap lo Heap da prendere in esame.
  * @param dimensione la dimensione dello Heap.
  * @param indice indice del nodo corrente - nodo che sta venendo spostato.
  */
-void minHeapify(struct PercorsoNode heap[], unsigned int *dimensione, unsigned int indice){
+void maxHeapify(struct PercorsoNode heap[], const unsigned int *dimensione, unsigned int indice){
     /**
      * Indice della parte sinistra dello Heap.
      */
@@ -724,6 +725,136 @@ void minHeapify(struct PercorsoNode heap[], unsigned int *dimensione, unsigned i
      * Indice della parte destra dello Heap.
      */
     int dx=(int) (2*indice+2);
+    /**
+     * Indice del nodo con il valore massimo tra il nodo corrente e i figli sx e dx.
+     */
+    int massimo=(int) indice;
+
+
+    while (1) {
+        //se il nodo a sinistra è più grande di quello che stiamo valutando
+        if (sx < (*dimensione) && heap[sx].distanza > heap[indice].distanza) {
+            massimo = sx;
+        }
+        //se il nodo a destra è più grande di quello che stiamo valutando
+        if (dx < (*dimensione) && heap[dx].distanza > heap[massimo].distanza) {
+            massimo = dx;
+        }
+
+        //se c'è un nodo più grande rispetto a quello che stiamo valutando - SWAPPING
+        if (massimo != indice) {
+            /**
+             * Nodo minimo nello Heap.
+             */
+            struct PercorsoNode tmp = heap[massimo];
+
+            //swapping
+            heap[massimo] = heap[indice];
+            heap[indice] = tmp;
+
+            indice = massimo;
+        }
+        else {
+            break;
+        }
+    }
+}
+
+/**
+ * Funzione di supporto per riorganizzare il Max-Heap dopo un inserimento nello stesso.
+ *
+ * @param heap lo Heap che deve essere sistemato.
+ * @param indice indice del nodo da sistemare.
+ */
+void sistemareInserimentoNelMaxHeap(struct PercorsoNode heap[], int indice){
+    /**
+     * Genitore dell'elemento dell'indice.
+     */
+    int indiceGenitore=(indice-1)/2;
+    /**
+     * Temporaneo per salvare il nodo.
+     */
+    struct PercorsoNode tmp=heap[indice];
+
+
+    //fino a che il genitore è più piccolo del figlio
+    while (indice > 0 && heap[indiceGenitore].distanza < tmp.distanza) {
+        heap[indice] = heap[indiceGenitore];
+        indice = indiceGenitore;
+        indiceGenitore = (indice - 1) / 2;
+    }
+
+    heap[indice] = tmp;
+}
+
+/**
+ * Inserisce nel Max-Heap un nuovo nodo.
+ *
+ * @param heap lo Heap a cui va aggiunto il nuovo nodo.
+ * @param dimensione la dimensione dello Heap - # elementi nello Heap.
+ * @param lunghezzaArray la lunghezza dell'Array che contiene lo Heap.
+ * @param nodoDaAggiungere il nodo da aggiungere allo Heap.
+ */
+void inserimentoNelMaxHeap(struct PercorsoNode heap[], int *dimensione, int *lunghezzaArray, struct PercorsoNode nodoDaAggiungere){
+    //se array è completamente pieno --> riallocare array
+    if(*lunghezzaArray==*dimensione){
+        //aumentare lunghezza array
+        *lunghezzaArray=(*lunghezzaArray)+7;
+        heap=(struct PercorsoNode *) realloc(heap, ((*lunghezzaArray)* sizeof(struct PercorsoNode)));
+    }
+
+    //aggiunta nodo in fondo allo Heap
+    heap[(*dimensione)]=nodoDaAggiungere;
+    //sistemiamo lo Heap
+    sistemareInserimentoNelMaxHeap(heap, *dimensione);
+    //aumentiamo il numero di elementi nello Heap
+    ++(*dimensione);
+}
+
+/**
+ * Restituisce il massimo nodo presente nel Max-Heap - lo elimina anche.
+ *
+ * @param heap lo Heap in cui va ricercato il nodo minimo.
+ * @param dimensione la dimensione dello Heap.
+ * @return il nodo minimo presente nello Heap.
+ */
+struct PercorsoNode estraiMassimoDelMaxHeap(struct PercorsoNode heap[], unsigned int *dimensione){
+    /**
+     * Nodo minimo presente nello Heap da ritornare e da eliminare da esso.
+     */
+    struct PercorsoNode nodoMassimo=heap[0];
+
+
+    //sostituzione della radice con l'ultimo nodo
+    heap[0]=heap[(*dimensione)-1];
+    //riduci dimensione dello Heap
+    --(*dimensione);
+
+    //sistema lo Heap
+    maxHeapify(heap, dimensione, 0);
+
+    //ritorna il minimo
+    return nodoMassimo;
+}
+
+
+// MIN-HEAP
+/**
+ * Utilizzata per mantenere corrette le proprietà del Min-Heap dopo un'eliminazione.
+ *
+ * @param heap lo Heap da prendere in esame.
+ * @param dimensione la dimensione dello Heap.
+ * @param indice indice del nodo corrente - nodo che sta venendo spostato.
+ */
+void minHeapify(struct PercorsoNode heap[], int *dimensione, unsigned int indice){
+    /**
+     * Indice della parte sinistra dello Heap.
+     */
+    int sx=(int) (2*indice);
+    /**
+     * Indice della parte destra dello Heap.
+     */
+    int dx=(int) (2*indice+1);
     /**
      * Indice del nodo con il valore più minimo tra il nodo corrente e i figli sx e dx.
      */
@@ -734,6 +865,9 @@ void minHeapify(struct PercorsoNode heap[], unsigned int *dimensione, unsigned i
     if(sx<(*dimensione) && heap[sx].distanza<heap[indice].distanza){
         //il più piccolo diventa quello a sinistra
         minimo=sx;
+    }
+    else{
+        minimo=(int) indice;
     }
     //se il nodo a destra è più piccolo di quello che stiamo valutando
     if(dx<(*dimensione) && heap[dx].distanza<heap[indice].distanza){
@@ -746,78 +880,100 @@ void minHeapify(struct PercorsoNode heap[], unsigned int *dimensione, unsigned i
         /**
          * Nodo minimo nello Heap.
          */
-        struct PercorsoNode tmp=heap[minimo];
+        struct PercorsoNode tmp=heap[indice];
 
         //swapping
-        heap[minimo]=heap[indice];
-        heap[indice]=tmp;
+        heap[indice]=heap[minimo];
+        heap[minimo]=tmp;
+
+        printf(" ->MINHEAPIFY ");
+        for (int i = 0; i < (*dimensione); ++i) {
+            printf("%d ", heap[i].distanza);
+        }
+        printf("\n");
 
         //ricorsione per sistemare tutto lo Heap
         minHeapify(heap, dimensione, minimo);
     }
+
+    printf(" ->MINHEAPIFY ");
+    for (int i = 0; i < (*dimensione); ++i) {
+        printf("%d ", heap[i].distanza);
+    }
+    printf("\n");
 }
 
 /**
- * Funzione di supporto per riorganizzare lo Heap dopo un inserimento nello stesso.
+ * Funzione di supporto per riorganizzare il Min-Heap dopo un inserimento nello stesso.
  *
  * @param heap lo Heap che deve essere sistemato.
  * @param indice indice del nodo da sistemare.
  */
-void sistemareInserimentoNelloHeap(struct PercorsoNode heap[], int indice){
+void sistemareInserimentoNelMinHeap(struct PercorsoNode heap[], int indice){
     /**
      * Genitore dell'elemento dell'indice.
      */
-    int indiceGenitore=(indice-1)/2;
+    int indiceGenitore=(int) ((indice-1)/2);
     /**
      * Temporaneo per salvare il nodo.
      */
-    struct PercorsoNode tmp;
+    struct PercorsoNode tmp=heap[indice];
 
 
-    //se il genitore è più grande del figlio
-    if(heap[indiceGenitore].distanza > heap[indice].distanza){
-        //salviamo il valore del genitore
-        tmp=heap[indiceGenitore];
-        heap[indiceGenitore]=heap[indice];
-        heap[indice]=tmp;
-
-        //facciamo la stessa cosa per tutti i nodi nello Heap
-        sistemareInserimentoNelloHeap(heap, indiceGenitore);
+    //fino a che genitore è più grande del figlio
+    while (indice > 0 && heap[indiceGenitore].distanza > tmp.distanza) { //TODO forse è qua il problema
+        heap[indice] = heap[indiceGenitore];
+        heap[indiceGenitore]=tmp;
+        indice = indiceGenitore;
+        indiceGenitore = (indice - 1) / 2;
     }
+
+    heap[indice] = tmp;
 }
 
 /**
- * Inserisce nello Heap un nuovo nodo.
+ * Inserisce nel Min-Heap un nuovo nodo.
  *
  * @param heap lo Heap a cui va aggiunto il nuovo nodo.
  * @param dimensione la dimensione dello Heap - # elementi nello Heap.
  * @param lunghezzaArray la lunghezza dell'Array che contiene lo Heap.
  * @param nodoDaAggiungere il nodo da aggiungere allo Heap.
  */
-void inserimentoNelloHeap(struct PercorsoNode heap[], int *dimensione, int *lunghezzaArray, struct PercorsoNode nodoDaAggiungere){
+void inserimentoNelMinHeap(struct PercorsoNode heap[], int *dimensione, int *lunghezzaArray, struct PercorsoNode nodoDaAggiungere){
     //se array è completamente pieno --> riallocare array
     if(*lunghezzaArray==*dimensione){
         //aumentare lunghezza array
-        *lunghezzaArray=(*lunghezzaArray)+5;
+        (*lunghezzaArray)=(*lunghezzaArray)+7;
         heap=(struct PercorsoNode *) realloc(heap, ((*lunghezzaArray)* sizeof(struct PercorsoNode)));
     }
 
     //aggiunta nodo in fondo allo Heap
     heap[(*dimensione)]=nodoDaAggiungere;
-    //sistemiamo lo Heap
-    sistemareInserimentoNelloHeap(heap, *dimensione);
+    printf(" ->INSERIMENTO ");
+    for (int i = 0; i < (*dimensione)+1; ++i) {
+        printf("%d ", heap[i].distanza);
+    }
+    printf("\n");
     //aumentiamo il numero di elementi nello Heap
     ++(*dimensione);
+    //sistemiamo lo Heap
+    sistemareInserimentoNelMinHeap(heap, *dimensione);
+
+    printf(" ->SISTEMA INSERIMENTO ");
+    for (int i = 0; i < (*dimensione); ++i) {
+        printf("%d ", heap[i].distanza);
+    }
+    printf("\n");
 }
 
 /**
- * Restituisce il minimo nodo presente nello Heap - lo elimina anche.
+ * Restituisce il minimo nodo presente nel Min-Heap - lo elimina anche.
  *
  * @param heap lo Heap in cui va ricercato il nodo minimo.
  * @param dimensione la dimensione dello Heap.
  * @return il nodo minimo presente nello Heap.
  */
-struct PercorsoNode estraiMinimoDalloHeap(struct PercorsoNode heap[], unsigned int *dimensione){
+struct PercorsoNode estraiMinimoDalMinHeap(struct PercorsoNode heap[], int *dimensione){
     /**
      * Nodo minimo presente nello Heap da ritornare e da eliminare da esso.
      */
@@ -829,8 +985,20 @@ struct PercorsoNode estraiMinimoDalloHeap(struct PercorsoNode heap[], unsigned i
     //riduci dimensione dello Heap
     --(*dimensione);
 
+    printf(" ->POP HEAPIFY ");
+    for (int i = 0; i < (*dimensione); ++i) {
+        printf("%d ", heap[i].distanza);
+    }
+    printf("\n");
+
     //sistema lo Heap
     minHeapify(heap, dimensione, 0);
+
+    printf(" ->POP ");
+    for (int i = 0; i < (*dimensione); ++i) {
+        printf("%d ", heap[i].distanza);
+    }
+    printf("\n");
 
     //ritorna il minimo
     return nodoMinimo;
@@ -927,50 +1095,9 @@ struct ArrayNodeStazione *tutteLeStazioniInAvanti(unsigned int partenza, unsigne
         (*numeroDiStazioni)=posizioneArray;
         //stazioni intermedie tra quella di partenza e quella di arrivo
         stazioniIntermedie=(struct ArrayNodeStazione *) realloc(stazioniIntermedie, (*numeroDiStazioni)*sizeof(struct ArrayNodeStazione));
-        printf(" ->stazioni intermedie ");
-        for (int i = 0; i < (*numeroDiStazioni); ++i) {
-            printf("%d ", stazioniIntermedie[i].distanza);
-        }
-        printf("\n");
         qsort(stazioniIntermedie, (*numeroDiStazioni), sizeof(struct ArrayNodeStazione), comparazioneAvanti);
-        printf(" ->stazioni intermedie ");
-        for (int i = 0; i < (*numeroDiStazioni); ++i) {
-            printf("%d ", stazioniIntermedie[i].distanza);
-        }
-        printf("\n");
         return stazioniIntermedie;
     }
-
-
-
-
-
-
-
-    //per ogni stazione che ci potrebbe essere tra partenza e arrivo
-    for (unsigned int i = partenza; i <= arrivo; ++i) {
-        //salviamo la stazione cercata
-        ricerca= ricercaStazione(autostrada, i);
-        //se la stazione esiste la aggiungiamo alle stazioniIntermedie[]
-        if(ricerca!=NULL){
-            //se l'Array stazioniIntermedie[] è pieno lo reallochiamo
-            if(posizioneArray==x){
-                x=x*2;
-                stazioniIntermedie=(struct ArrayNodeStazione *) realloc(stazioniIntermedie, (x*sizeof(struct ArrayNodeStazione)));
-            }
-            //aggiungiamo la stazione
-            stazioniIntermedie[posizioneArray].distanza= ricerca->distanza;
-            stazioniIntermedie[posizioneArray].autonomiaMassima=ricerca->autonomiaMassima;
-            //aumentiamo la prossima posizione libera
-            posizioneArray++;
-        }
-    }
-
-    //numero di stazioni tra quella di partenza e quella d'arrivo
-    (*numeroDiStazioni)=posizioneArray;
-    //stazioni intermedie tra quella di partenza e quella di arrivo
-    stazioniIntermedie=(struct ArrayNodeStazione *) realloc(stazioniIntermedie, (*numeroDiStazioni)*sizeof(struct ArrayNodeStazione));
-    return stazioniIntermedie;
 }
 
 /**
@@ -1061,49 +1188,9 @@ struct ArrayNodeStazione *tutteLeStazioniAllIndietro(unsigned int partenza, unsi
         (*numeroDiStazioni)=posizioneArray;
         //stazioni intermedie tra quella di partenza e quella di arrivo
         stazioniIntermedie=(struct ArrayNodeStazione *) realloc(stazioniIntermedie, (*numeroDiStazioni)*sizeof(struct ArrayNodeStazione));
-        printf(" ->stazioni intermedie ");
-        for (int i = 0; i < (*numeroDiStazioni); ++i) {
-            printf("%d ", stazioniIntermedie[i].distanza);
-        }
-        printf("\n");
         qsort(stazioniIntermedie, (*numeroDiStazioni), sizeof(struct ArrayNodeStazione), comparazioneIndietro);
-        printf(" ->stazioni intermedie ");
-        for (int i = 0; i < (*numeroDiStazioni); ++i) {
-            printf("%d ", stazioniIntermedie[i].distanza);
-        }
-        printf("\n");
         return stazioniIntermedie;
     }
-
-
-
-
-
-
-    //per ogni stazione che ci potrebbe essere tra partenza e arrivo
-    for (int i = (int) partenza; i >= (int) arrivo; --i) {
-        //salviamo la stazione cercata
-        ricerca = ricercaStazione(autostrada, i);
-        //se la stazione esiste la aggiungiamo alle stazioniIntermedie[]
-        if (ricerca != NULL) {
-            //se l'Array stazioniIntermedie[] è pieno lo reallochiamo
-            if (posizioneArray == x) {
-                x=x*2;
-                stazioniIntermedie=(struct ArrayNodeStazione *) realloc(stazioniIntermedie, (x * sizeof(struct ArrayNodeStazione)));
-            }
-            //aggiungiamo la stazione
-            stazioniIntermedie[posizioneArray].distanza = ricerca->distanza;
-            stazioniIntermedie[posizioneArray].autonomiaMassima = ricerca->autonomiaMassima;
-            //aumentiamo la prossima posizione libera
-            posizioneArray++;
-        }
-    }
-
-    //numero di stazioni tra quella di partenza e quella d'arrivo
-    (*numeroDiStazioni)=posizioneArray;
-    //stazioni intermedie tra quella di partenza e quella di arrivo
-    stazioniIntermedie=(struct ArrayNodeStazione *) realloc(stazioniIntermedie, ((*numeroDiStazioni)*sizeof(struct ArrayNodeStazione)));
-    return stazioniIntermedie;
 }
 
 /**
@@ -1146,7 +1233,7 @@ double punteggioPartenzaArrivo(int partenza, int arrivo){
 }
 
 /**
- * Estrai il nodo minimo.
+ * Estrai il nodo minimo - comparazione tra distanze.
  *
  * @param set il Set da cui estrarre il mimino.
  * @param setSize la dimensione del Set.
@@ -1171,7 +1258,7 @@ struct PercorsoNode popMin(struct PercorsoNode set[], int *setSize){
 }
 
 /**
- * Estrai il nodo massimo.
+ * Estrai il nodo massimo - comparazione tra .f.
  *
  * @param set il Set da cui estrarre il massimo.
  * @param setSize la dimensione del Set.
@@ -1376,13 +1463,12 @@ int aStarInAvanti(struct ArrayNodeStazione stazioni[], int numeroStazioni, int p
 
 
     //aggiunta nodo di partenza all'openSet
-    openSet[openSize]=start;
-    ++openSize;
+    inserimentoNelMinHeap(openSet, &openSize, &nuovaDimensioneOpenSet, start);
 
     //fino a che ci sono nodi da valutare
     while (openSize>0){
-        //estrazione nodo minimo dall'openSet --> deve avere minima la .f
-        corrente= popMin(openSet, &openSize);
+        //estrazione nodo minimo dall'openSet
+        corrente= estraiMinimoDalMinHeap(openSet, &openSize);
         //aggiungi nodo corrente al closeSet
         if(closeSize!=0 && closeSize%numeroStazioni==0){
             nuovaDimensioneCloseSet=closeSize+numeroStazioni;
@@ -1462,11 +1548,7 @@ int aStarInAvanti(struct ArrayNodeStazione stazioni[], int numeroStazioni, int p
             }
             //vicino NON è ancora presente
             if(!trovato){
-                if(openSize!=0 && openSize%numeroStazioni==0){
-                    nuovaDimensioneOpenSet=openSize+numeroStazioni;
-                    openSet=(struct PercorsoNode *) realloc(openSet, (nuovaDimensioneOpenSet* sizeof(struct PercorsoNode)));
-                }
-                openSet[openSize++]=vicino;
+                inserimentoNelMinHeap(openSet, &openSize, &nuovaDimensioneOpenSet, vicino);
             }
 
             //guardiamo il prossimo vicino
@@ -1503,7 +1585,7 @@ int aStarAllIndietro(struct ArrayNodeStazione stazioni[], int numeroStazioni, in
     /**
      * Contiene tutti i tentativi di nodi da valutare.
      */
-    struct PercorsoNode *openSet=(struct PercorsoNode *) calloc(numeroStazioni, sizeof(struct PercorsoNode));
+    struct PercorsoNode *openSet=(struct PercorsoNode *) calloc(numeroStazioni, sizeof(struct PercorsoNode)); //TODO trasformarlo in un MAX HEAP - prima vanno sistemate le funzioni del max heap
     /**
      * Contiene tutti i nodi già valutati.
      */
@@ -1698,7 +1780,8 @@ int aStar(struct ArrayNodeStazione stazioni[], int numeroStazioni, int partenza,
     }
     //calcolare il percorso al ritorno
     else{
-        return aStarAllIndietro(stazioni, numeroStazioni, partenza, arrivo, percorso);
+        return 0;
+//        aStarAllIndietro(stazioni, numeroStazioni, partenza, arrivo, percorso);
     }
 }
 
