@@ -801,7 +801,7 @@ void inserimentoNelMaxHeap(struct PercorsoNode heap[], int *dimensione, int *lun
     //se array è completamente pieno --> riallocare array
     if((*lunghezzaArray)==(*dimensione)){
         //aumentare lunghezza array
-        (*lunghezzaArray)=(*lunghezzaArray)+7;
+        (*lunghezzaArray)=(*lunghezzaArray)*2;
         heap=(struct PercorsoNode *) realloc(heap, ((*lunghezzaArray) * sizeof(struct PercorsoNode)));
     }
 
@@ -933,7 +933,7 @@ void inserimentoNelMinHeap(struct PercorsoNode heap[], int *dimensione, int *lun
     //se array è completamente pieno --> riallocare array
     if((*lunghezzaArray)==(*dimensione)){
         //aumentare lunghezza array
-        (*lunghezzaArray)=(*lunghezzaArray)+7;
+        (*lunghezzaArray)=(*lunghezzaArray)*2;
         heap=(struct PercorsoNode *) realloc(heap, ((*lunghezzaArray) * sizeof(struct PercorsoNode)));
     }
 
@@ -1438,12 +1438,12 @@ int aStarInAvanti(struct ArrayNodeStazione stazioni[], int numeroStazioni, int p
         corrente= estraiMinimoDalMinHeap(openSet, &openSize);
         //aggiungi nodo corrente al closeSet
         if(closeSize!=0 && closeSize%numeroStazioni==0){
-            nuovaDimensioneCloseSet=closeSize+numeroStazioni;
+//            nuovaDimensioneCloseSet=closeSize+numeroStazioni;
+            nuovaDimensioneCloseSet=closeSize*2; //TODO
             closeSet=(struct PercorsoNode *) realloc(closeSet, (nuovaDimensioneCloseSet* sizeof(struct PercorsoNode)));
         }
         closeSet[closeSize]=corrente;
         ++closeSize;
-
 
         //indice della stazione corrente nell'Array delle stazioni
         indiceStazioneCorrente= ricercaIndiceStazioneCorrenteInAvanti(stazioni, numeroStazioni, corrente);
@@ -1479,7 +1479,7 @@ int aStarInAvanti(struct ArrayNodeStazione stazioni[], int numeroStazioni, int p
 
             //il vicino è già stato visitato - è nel closeSet
             trovato=0;
-            for (i = 0; i < closeSize; ++i) {
+            for (i = 0; i < closeSize; ++i) { //TODO ricerca efficiente in qualche cazzo di strano modo
                 //il vicino è già stato visitato
                 if(closeSet[i].distanza==stazioni[indiceVicino].distanza){
                     trovato=1;
@@ -1506,7 +1506,7 @@ int aStarInAvanti(struct ArrayNodeStazione stazioni[], int numeroStazioni, int p
 
             //il vicino è già presente tra quelli da controllare - è nell'openSet
             trovato=0;
-            for (i = 0; i < openSize; ++i) {
+            for (i = 0; i < openSize; ++i) { //TODO ricerca efficiente in qualche cazzo di strano modo
                 //il vicino è già stato visitato
                 if(openSet[i].distanza==stazioni[indiceVicino].distanza){
                     trovato=1;
@@ -1552,7 +1552,7 @@ int aStarAllIndietro(struct ArrayNodeStazione stazioni[], int numeroStazioni, in
     /**
      * Contiene tutti i tentativi di nodi da valutare.
      */
-    struct PercorsoNode *openSet=(struct PercorsoNode *) calloc(numeroStazioni, sizeof(struct PercorsoNode)); //TODO trasformarlo in un MAX HEAP - prima vanno sistemate le funzioni del max heap
+    struct PercorsoNode *openSet=(struct PercorsoNode *) calloc(numeroStazioni, sizeof(struct PercorsoNode));
     /**
      * Contiene tutti i nodi già valutati.
      */
@@ -1619,19 +1619,16 @@ int aStarAllIndietro(struct ArrayNodeStazione stazioni[], int numeroStazioni, in
     int nuovaDimensioneOpenSet=numeroStazioni;
 
 
-    //aggiunta nodo di partenza all'openSet //TODO
+    //aggiunta nodo di partenza all'openSet
     inserimentoNelMaxHeap(openSet, &openSize, &nuovaDimensioneOpenSet, start);
-//    openSet[openSize]=start;
-//    ++openSize;
 
     //fino a che ci sono nodi da valutare
     while (openSize>0){
-        //estrazione nodo massimo dall'openSet --> deve avere massima la .f //TODO
+        //estrazione nodo massimo dall'openSet --> deve avere massima la .f
         corrente= estraiMassimoDalMaxHeap(openSet, &openSize);
-//        corrente= popMax(openSet, &openSize);
         //aggiunta nodo corrente al closeSet
         if(closeSize!=0 && closeSize%numeroStazioni==0){
-            nuovaDimensioneCloseSet=closeSize+numeroStazioni;
+            nuovaDimensioneCloseSet=closeSize*2;
             closeSet=(struct PercorsoNode *) realloc(closeSet, (nuovaDimensioneCloseSet*sizeof(struct PercorsoNode)));
         }
         closeSet[closeSize]=corrente;
@@ -1709,13 +1706,7 @@ int aStarAllIndietro(struct ArrayNodeStazione stazioni[], int numeroStazioni, in
             }
             //vicino NON è ancora presente
             if(!trovato){
-                //TODO
-//                if(openSize!=0 && openSize%numeroStazioni==0){
-//                    nuovaDimensioneOpenSet=openSize+numeroStazioni;
-//                    openSet=(struct PercorsoNode *) realloc(openSet, (nuovaDimensioneOpenSet* sizeof(struct PercorsoNode)));
-//                }
                 inserimentoNelMaxHeap(openSet, &openSize, &nuovaDimensioneOpenSet, vicino);
-//                openSet[openSize++]=vicino;
             }
 
             //guardiamo il prossimo vicino
@@ -2221,5 +2212,4 @@ int main() {
 
 
 /*TODO
- * aStar --> al posto di pila usare heap
  */
