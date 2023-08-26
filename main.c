@@ -2066,6 +2066,7 @@ int *percorsoPianificatoInAvanti(struct ArrayNodeStazione stazioni[], int numero
         indiceStazioneDaSuperare=indiceStazionePiuLontana+ stazionePiuLontana((stazioni+indiceStazionePiuLontana), (numeroDiStazioni-indiceStazionePiuLontana), stazioni[indiceStazionePiuLontana].autonomiaMassima);
         //ricerca migliore stazione fino a questo momento
         for (int i = indiceStazionePiuLontana-1; i > indiceCorrente; --i) {
+            //TODO al posto stazioni[i].autonomiaMassima --> trovaStazione(stazioni, percorsoTrovato[i]).autonomiaMassima
             if(stazioni[i].autonomiaMassima>=(stazioni[indiceStazioneDaSuperare].distanza-stazioni[i].distanza)){
                 indiceStazionePiuLontana=i;
                 indiceStazioneDaSuperare=indiceStazionePiuLontana+ stazionePiuLontana((stazioni+indiceStazionePiuLontana), (numeroDiStazioni-indiceStazionePiuLontana), stazioni[indiceStazionePiuLontana].autonomiaMassima);
@@ -2076,12 +2077,13 @@ int *percorsoPianificatoInAvanti(struct ArrayNodeStazione stazioni[], int numero
         ultimoControllo=0;
         distanzaDaControllare=(int) stazioni[indiceStazionePiuLontana].distanza;
         //ricerca stazioni ottimali precedenti
-        while (indiceDaControllare>=1 && ultimoControllo!=0){
+        while (indiceDaControllare>=1 && !ultimoControllo){
             ultimoControllo=1;
             indiceStazioneControllare= indiceStazione(stazioni, numeroDiStazioni, percorsoTrovato[indiceDaControllare]);
             indiceStazionePrecedente= indiceStazione(stazioni, numeroDiStazioni, percorsoTrovato[indiceDaControllare-1]);
             //ricerca stazioni ottimali
             for (int i = indiceStazioneControllare-1; i > indiceStazionePrecedente; --i) {
+                //TODO al posto stazioni[i].autonomiaMassima --> trovaStazione(stazioni, percorsoTrovato[i]).autonomiaMassima
                 if (stazioni[i].autonomiaMassima>=(distanzaDaControllare-stazioni[i].distanza)){
                     ultimoControllo=0;
                     //aggiunta stazione con autonomia massima al percorso da trovare
@@ -2089,7 +2091,7 @@ int *percorsoPianificatoInAvanti(struct ArrayNodeStazione stazioni[], int numero
                 }
             }
             //nuova distanza da controllare
-            distanzaDaControllare=(int) stazioni[indiceDaControllare].distanza;
+            distanzaDaControllare=percorsoTrovato[indiceDaControllare];
             --indiceDaControllare;
         }
 
@@ -2103,7 +2105,6 @@ int *percorsoPianificatoInAvanti(struct ArrayNodeStazione stazioni[], int numero
 
         //la stazione più lontana è quella massima ==> percorso NON trovato
         if (indiceStazionePiuLontana==indiceStazioneDaSuperare){
-//            free(percorsoTrovato);
             //percorso NON trovato
             return NULL;
         }
