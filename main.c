@@ -1975,13 +1975,10 @@ void RottamaAuto(){
  * @param autonomiaMassima autonomia massima dell'auto.
  * @return indice della stazione più lontana.
  */
-int stazionePiuLontana(struct ArrayNodeStazione stazioni[], int numeroStazioni, unsigned int autonomiaMassima){ //TODO qua c'è errore
+int stazionePiuLontana(struct ArrayNodeStazione stazioni[], int numeroStazioni, unsigned int autonomiaMassima){
     for (int i = 1; i < numeroStazioni; ++i) {
         if(autonomiaMassima<(stazioni[i].distanza-stazioni[0].distanza)){
             return --i;
-        }
-        else{
-            ++i;
         }
     }
     return (numeroStazioni-1);
