@@ -2004,7 +2004,7 @@ int indiceStazione(struct ArrayNodeStazione stazioni[], int numeroStazioni, unsi
     return -1;
 }
 
-int *percorsoPianificatoInAvanti(struct ArrayNodeStazione stazioni[], int numeroDiStazioni, int partenza, int arrivo, int **percorso){
+int *percorsoPianificatoInAvanti(struct ArrayNodeStazione stazioni[], int numeroDiStazioni, int partenza, int arrivo){
     /**
      * Percorso da ritornare.
      */
@@ -2112,6 +2112,9 @@ int *percorsoPianificatoInAvanti(struct ArrayNodeStazione stazioni[], int numero
             percorsoTrovato=(int *) realloc(percorsoTrovato, nuovaDimensionePercorso* sizeof(int));
         }
         percorsoTrovato[indicePercorsoTrovato]=arrivo;
+        for (int i = 0; i < indicePercorsoTrovato; ++i) {
+            printf("%d ", percorsoTrovato[i]);
+        }
         return percorsoTrovato;
     }
     else{
@@ -2120,10 +2123,10 @@ int *percorsoPianificatoInAvanti(struct ArrayNodeStazione stazioni[], int numero
     }
 }
 
-int *percorsoPianificato(struct ArrayNodeStazione stazioni[], int numeroDiStazioni, int partenza, int arrivo, int **percorso){
+int *percorsoPianificato(struct ArrayNodeStazione stazioni[], int numeroDiStazioni, int partenza, int arrivo){
     //calcolare il percorso all'andata
     if(partenza<arrivo){
-        return percorsoPianificatoInAvanti(stazioni, numeroDiStazioni, partenza, arrivo, percorso);
+        return percorsoPianificatoInAvanti(stazioni, numeroDiStazioni, partenza, arrivo);
     }
     //calcolare il percorso al ritorno
     else{
@@ -2201,8 +2204,8 @@ void PianificaPercorso(){
 //        struct PercorsoNode *percorso=(struct PercorsoNode *) calloc(5*numeroDiStazioni, sizeof(struct PercorsoNode));
 
         //TODO nuovo pianifica percorso
-        int *percorsoDaTrovare=(int *) calloc(numeroDiStazioni, sizeof(int));
-        int *percorsoTrovato= percorsoPianificato(stazioniIntermedie, numeroDiStazioni, distanzaStazionePartenza, distanzaStazioneArrivo, &percorsoDaTrovare);
+//        int *percorsoDaTrovare=(int *) calloc(numeroDiStazioni, sizeof(int));
+        int *percorsoTrovato= percorsoPianificato(stazioniIntermedie, numeroDiStazioni, distanzaStazionePartenza, distanzaStazioneArrivo);
         if(percorsoTrovato==NULL){
             printf("nessun percorso\n");
         }
@@ -2227,7 +2230,7 @@ void PianificaPercorso(){
 
         //deallochiamo memoria che NON ci serve più per i prossimi percorsi
         free(stazioniIntermedie);
-//        free(percorso);
+        free(percorsoTrovato);
     }
 }
 
