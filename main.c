@@ -1971,13 +1971,13 @@ void RottamaAuto(){
  * Indice della stazione più lontana data l'autonomia massima della macchina.
  *
  * @param stazioni stazioni da controllare.
- * @param numeroStazioni numero di stazioni presenti.
+ * @param numeroStazioni numero di stazioni da controllare.
  * @param autonomiaMassima autonomia massima dell'auto.
  * @return indice della stazione più lontana.
  */
-int stazionePiuLontana(struct ArrayNodeStazione stazioni[], int numeroStazioni, unsigned int autonomiaMassima){
-    for (int i = 1; i < numeroStazioni; ++i) {
-        if(autonomiaMassima<(stazioni[i].distanza-stazioni[0].distanza)){
+int stazionePiuLontana(struct ArrayNodeStazione stazioni[], int indiceIniziale, int numeroStazioni, unsigned int autonomiaMassima){
+    for (int i = indiceIniziale; i < numeroStazioni; ++i) {
+        if(autonomiaMassima<(stazioni[i].distanza-stazioni[indiceIniziale].distanza)){
             return --i;
         }
         else{
@@ -2016,11 +2016,11 @@ int *percorsoPianificatoInAvanti(struct ArrayNodeStazione stazioni[], int numero
     /**
      * Indice stazione corrente.
      */
-    int corrente=0;
+    int indiceCorrente=0;
     /**
      * Indice della stazione più lontana data la stazione corrente.
      */
-    int indiceStazionePiuLontana= stazionePiuLontana(stazioni, numeroDiStazioni, stazioni[0].autonomiaMassima);
+    int indiceStazionePiuLontana= stazionePiuLontana(stazioni, 0, numeroDiStazioni, stazioni[0].autonomiaMassima);
     /**
      * Indice della stazione da superare.
      */
@@ -2055,13 +2055,20 @@ int *percorsoPianificatoInAvanti(struct ArrayNodeStazione stazioni[], int numero
     percorsoTrovato[indicePercorsoTrovato]=partenza;
     ++indicePercorsoTrovato;
 
+    //se dalla stazione di partenza si arriva direttamente a quella di arrivo
+    if (stazioni[0].autonomiaMassima>= abs(arrivo-partenza)){
+        percorsoTrovato[indicePercorsoTrovato]=arrivo;
+        return percorsoTrovato;
+    }
+
+    //fino a che NON siamo arrivati alla stazione di arrivo
     while (stazioni[indiceStazionePiuLontana].distanza!=arrivo){
-        indiceStazioneDaSuperare=indiceStazionePiuLontana+ stazionePiuLontana((stazioni+indiceStazionePiuLontana), (numeroDiStazioni-indiceStazionePiuLontana), stazioni[indiceStazionePiuLontana].autonomiaMassima);
+        indiceStazioneDaSuperare=indiceStazionePiuLontana+ stazionePiuLontana(stazioni, indiceStazionePiuLontana, numeroDiStazioni, stazioni[indiceStazionePiuLontana].autonomiaMassima);
         //ricerca migliore stazione fino a questo momento
-        for (int i = indiceStazionePiuLontana-1; i > corrente; --i) {
+        for (int i = indiceStazionePiuLontana-1; i > indiceCorrente; --i) {
             if(stazioni[i].autonomiaMassima>=(stazioni[indiceStazioneDaSuperare].distanza-stazioni[i].distanza)){
                 indiceStazionePiuLontana=i;
-                indiceStazioneDaSuperare=indiceStazionePiuLontana+ stazionePiuLontana((stazioni+indiceStazionePiuLontana), (numeroDiStazioni-indiceStazionePiuLontana), stazioni[indiceStazionePiuLontana].autonomiaMassima);
+                indiceStazioneDaSuperare=indiceStazionePiuLontana+ stazionePiuLontana(stazioni, indiceStazionePiuLontana, numeroDiStazioni, stazioni[indiceStazionePiuLontana].autonomiaMassima);
             }
         }
 
@@ -2101,7 +2108,7 @@ int *percorsoPianificatoInAvanti(struct ArrayNodeStazione stazioni[], int numero
             return NULL;
         }
 
-        corrente=indiceStazionePiuLontana;
+        indiceCorrente=indiceStazionePiuLontana;
         indiceStazionePiuLontana=indiceStazioneDaSuperare;
     }
 
@@ -2223,7 +2230,7 @@ void PianificaPercorso(){
 
         //deallochiamo memoria che NON ci serve più per i prossimi percorsi
         free(stazioniIntermedie);
-        free(percorsoTrovato);
+//        free(percorsoTrovato);
     }
 }
 
