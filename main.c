@@ -1975,9 +1975,9 @@ void RottamaAuto(){
  * @param autonomiaMassima autonomia massima dell'auto.
  * @return indice della stazione più lontana.
  */
-int stazionePiuLontana(struct ArrayNodeStazione stazioni[], int indiceIniziale, int numeroStazioni, unsigned int autonomiaMassima){
-    for (int i = indiceIniziale; i < numeroStazioni; ++i) {
-        if(autonomiaMassima<(stazioni[i].distanza-stazioni[indiceIniziale].distanza)){
+int stazionePiuLontana(struct ArrayNodeStazione stazioni[], int numeroStazioni, unsigned int autonomiaMassima){ //TODO qua c'è errore
+    for (int i = 1; i < numeroStazioni; ++i) {
+        if(autonomiaMassima<(stazioni[i].distanza-stazioni[0].distanza)){
             return --i;
         }
         else{
@@ -2020,7 +2020,7 @@ int *percorsoPianificatoInAvanti(struct ArrayNodeStazione stazioni[], int numero
     /**
      * Indice della stazione più lontana data la stazione corrente.
      */
-    int indiceStazionePiuLontana= stazionePiuLontana(stazioni, 0, numeroDiStazioni, stazioni[0].autonomiaMassima);
+    int indiceStazionePiuLontana= stazionePiuLontana(stazioni, numeroDiStazioni, stazioni[0].autonomiaMassima);
     /**
      * Indice della stazione da superare.
      */
@@ -2063,12 +2063,12 @@ int *percorsoPianificatoInAvanti(struct ArrayNodeStazione stazioni[], int numero
 
     //fino a che NON siamo arrivati alla stazione di arrivo
     while (stazioni[indiceStazionePiuLontana].distanza!=arrivo){
-        indiceStazioneDaSuperare=indiceStazionePiuLontana+ stazionePiuLontana(stazioni, indiceStazionePiuLontana, numeroDiStazioni, stazioni[indiceStazionePiuLontana].autonomiaMassima);
+        indiceStazioneDaSuperare=indiceStazionePiuLontana+ stazionePiuLontana((stazioni+indiceStazionePiuLontana), (numeroDiStazioni-indiceStazionePiuLontana), stazioni[indiceStazionePiuLontana].autonomiaMassima);
         //ricerca migliore stazione fino a questo momento
         for (int i = indiceStazionePiuLontana-1; i > indiceCorrente; --i) {
             if(stazioni[i].autonomiaMassima>=(stazioni[indiceStazioneDaSuperare].distanza-stazioni[i].distanza)){
                 indiceStazionePiuLontana=i;
-                indiceStazioneDaSuperare=indiceStazionePiuLontana+ stazionePiuLontana(stazioni, indiceStazionePiuLontana, numeroDiStazioni, stazioni[indiceStazionePiuLontana].autonomiaMassima);
+                indiceStazioneDaSuperare=indiceStazionePiuLontana+ stazionePiuLontana((stazioni+indiceStazionePiuLontana), (numeroDiStazioni-indiceStazionePiuLontana), stazioni[indiceStazionePiuLontana].autonomiaMassima);
             }
         }
 
