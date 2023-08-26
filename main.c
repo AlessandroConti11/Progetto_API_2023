@@ -1977,7 +1977,7 @@ void RottamaAuto(){
  */
 int stazionePiuLontana(struct ArrayNodeStazione stazioni[], int numeroStazioni, unsigned int autonomiaMassima){
     for (int i = 1; i < numeroStazioni; ++i) {
-        if(autonomiaMassima<(stazioni[i].distanza-stazioni[0].distanza)){
+        if(autonomiaMassima<abs((int) stazioni[i].distanza-(int) stazioni[0].distanza)){
             return --i;
         }
     }
@@ -1985,19 +1985,94 @@ int stazionePiuLontana(struct ArrayNodeStazione stazioni[], int numeroStazioni, 
 }
 
 /**
- * Indice della stazione data la distanza.
+ * Indice della stazione data la distanza - ordine crescente.
  *
  * @param stazioni stazioni da controllare.
  * @param numeroStazioni numero di stazioni presenti.
  * @param distanza distanza da ricercare.
  * @return indice della stazione con distanza ricercata.
  */
-int indiceStazione(struct ArrayNodeStazione stazioni[], int numeroStazioni, unsigned int distanza){
-    for (int i = 0; i < numeroStazioni; ++i) {
-        if(stazioni[i].distanza==distanza){
-            return i;
+int indiceStazioneInAvanti(struct ArrayNodeStazione stazioni[], int numeroStazioni, unsigned int distanza){
+    /**
+     * Indice parte sinistra da controllare.
+     */
+    int sx=0;
+    /**
+     * Indice parte destra da controllare.
+     */
+    int dx=numeroStazioni-1;
+    /**
+     * Indice punto medio da controllare.
+     */
+    int medio=0;
+
+
+    //fino a che sx è minore uguale a dx
+    while (sx<=dx){
+        //indice da controllare
+        medio=((int) sx+((int) ((dx-sx)/2)));
+
+        //controllo se il valore è uguale a quello cercato
+        if(stazioni[medio].distanza==distanza){
+            return medio;
+        }
+            //il valore da ricercare si trova nella metà superiore
+        else if(stazioni[medio].distanza<distanza){
+            sx=medio+1;
+        }
+            //il valore da ricercare si trova nella metà inferiore
+        else{
+            dx=medio-1;
         }
     }
+
+    //indice NON trovato
+    return -1;
+}
+
+/**
+ * Indice della stazione data la distanza - ordine crescente.
+ *
+ * @param stazioni stazioni da controllare.
+ * @param numeroStazioni numero di stazioni presenti.
+ * @param distanza distanza da ricercare.
+ * @return indice della stazione con distanza ricercata.
+ */
+int indiceStazioneAllIndietro(struct ArrayNodeStazione stazioni[], int numeroStazioni, unsigned int distanza){
+    /**
+     * Indice parte sinistra da controllare.
+     */
+    int sx=0;
+    /**
+     * Indice parte destra da controllare.
+     */
+    int dx=numeroStazioni-1;
+    /**
+     * Indice punto medio da controllare.
+     */
+    int medio=0;
+
+
+    //fino a che sx è minore uguale a dx
+    while (sx<=dx){
+        //indice da controllare
+        medio=((int) sx+((int) ((dx-sx)/2)));
+
+        //controllo se il valore è uguale a quello cercato
+        if(stazioni[medio].distanza==distanza){
+            return medio;
+        }
+            //il valore da ricercare si trova nella metà superiore
+        else if(stazioni[medio].distanza>distanza){
+            sx=medio+1;
+        }
+            //il valore da ricercare si trova nella metà inferiore
+        else{
+            dx=medio-1;
+        }
+    }
+
+    //indice NON trovato
     return -1;
 }
 
@@ -2084,8 +2159,10 @@ int *percorsoPianificatoInAvanti(struct ArrayNodeStazione stazioni[], int numero
         //ricerca stazioni ottimali precedenti
         while (indiceDaControllare>=1 && !ultimoControllo){
             ultimoControllo=1;
-            indiceStazioneControllare= indiceStazione(stazioni, numeroDiStazioni, percorsoTrovato[indiceDaControllare]);
-            indiceStazionePrecedente= indiceStazione(stazioni, numeroDiStazioni, percorsoTrovato[indiceDaControllare-1]);
+            indiceStazioneControllare= indiceStazioneInAvanti(stazioni, numeroDiStazioni,
+                                                              percorsoTrovato[indiceDaControllare]);
+            indiceStazionePrecedente= indiceStazioneInAvanti(stazioni, numeroDiStazioni,
+                                                             percorsoTrovato[indiceDaControllare - 1]);
             //ricerca stazioni ottimali
             for (int i = indiceStazioneControllare-1; i > indiceStazionePrecedente; --i) {
                 if (stazioni[i].autonomiaMassima>=(distanzaDaControllare-stazioni[i].distanza)){
@@ -2117,7 +2194,7 @@ int *percorsoPianificatoInAvanti(struct ArrayNodeStazione stazioni[], int numero
         indiceStazionePiuLontana=indiceStazioneDaSuperare;
     }
 
-    if (stazioni[indiceStazione(stazioni, numeroDiStazioni, percorsoTrovato[indicePercorsoTrovato-1])].autonomiaMassima>=(arrivo-percorsoTrovato[indicePercorsoTrovato-1])){
+    if (stazioni[indiceStazioneInAvanti(stazioni, numeroDiStazioni, percorsoTrovato[indicePercorsoTrovato - 1])].autonomiaMassima >= (arrivo - percorsoTrovato[indicePercorsoTrovato - 1])){
         //aggiunta stazione di arrivo
         if(indicePercorsoTrovato==numeroDiStazioni){
             nuovaDimensionePercorso=indicePercorsoTrovato*2;
