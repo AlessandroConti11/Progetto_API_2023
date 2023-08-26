@@ -927,17 +927,7 @@ struct ArrayNodeStazione *tutteLeStazioniInAvanti(unsigned int partenza, unsigne
         (*numeroDiStazioni)=posizioneArray;
         //stazioni intermedie tra quella di partenza e quella di arrivo
         stazioniIntermedie=(struct ArrayNodeStazione *) realloc(stazioniIntermedie, (*numeroDiStazioni)*sizeof(struct ArrayNodeStazione));
-        printf(" ->stazioni intermedie ");
-        for (int i = 0; i < (*numeroDiStazioni); ++i) {
-            printf("%d ", stazioniIntermedie[i].distanza);
-        }
-        printf("\n");
         qsort(stazioniIntermedie, (*numeroDiStazioni), sizeof(struct ArrayNodeStazione), comparazioneAvanti);
-        printf(" ->stazioni intermedie ");
-        for (int i = 0; i < (*numeroDiStazioni); ++i) {
-            printf("%d ", stazioniIntermedie[i].distanza);
-        }
-        printf("\n");
         return stazioniIntermedie;
     }
 
@@ -1061,17 +1051,7 @@ struct ArrayNodeStazione *tutteLeStazioniAllIndietro(unsigned int partenza, unsi
         (*numeroDiStazioni)=posizioneArray;
         //stazioni intermedie tra quella di partenza e quella di arrivo
         stazioniIntermedie=(struct ArrayNodeStazione *) realloc(stazioniIntermedie, (*numeroDiStazioni)*sizeof(struct ArrayNodeStazione));
-        printf(" ->stazioni intermedie ");
-        for (int i = 0; i < (*numeroDiStazioni); ++i) {
-            printf("%d ", stazioniIntermedie[i].distanza);
-        }
-        printf("\n");
         qsort(stazioniIntermedie, (*numeroDiStazioni), sizeof(struct ArrayNodeStazione), comparazioneIndietro);
-        printf(" ->stazioni intermedie ");
-        for (int i = 0; i < (*numeroDiStazioni); ++i) {
-            printf("%d ", stazioniIntermedie[i].distanza);
-        }
-        printf("\n");
         return stazioniIntermedie;
     }
 
@@ -2116,7 +2096,7 @@ int *percorsoPianificatoInAvanti(struct ArrayNodeStazione stazioni[], int numero
 
         //la stazione più lontana è quella massima ==> percorso NON trovato
         if (indiceStazionePiuLontana==indiceStazioneDaSuperare){
-            free(percorsoTrovato);
+//            free(percorsoTrovato);
             //percorso NON trovato
             return NULL;
         }
@@ -2218,7 +2198,7 @@ void PianificaPercorso(){
         /**
          * Percorso minimo dalla stazione di partenza fino a quella di arrivo.
          */
-        struct PercorsoNode *percorso=(struct PercorsoNode *) calloc(5*numeroDiStazioni, sizeof(struct PercorsoNode));
+//        struct PercorsoNode *percorso=(struct PercorsoNode *) calloc(5*numeroDiStazioni, sizeof(struct PercorsoNode));
 
         //TODO nuovo pianifica percorso
         int *percorsoDaTrovare=(int *) calloc(numeroDiStazioni, sizeof(int));
@@ -2234,20 +2214,20 @@ void PianificaPercorso(){
         /**
          * Numero di fermate che bisogna compiere nel percorso.
          */
-        int numeroFermate= aStar(stazioniIntermedie, numeroDiStazioni, distanzaStazionePartenza, distanzaStazioneArrivo, &percorso);
-
-        //se NON esiste il percorso
-        if(numeroFermate==0){
-            printf("nessun percorso\n");
-        }
-        //stampare il percorso
-        else{
-            stampaPercorso(numeroFermate, percorso, distanzaStazionePartenza, distanzaStazioneArrivo);
-        }
+//        int numeroFermate= aStar(stazioniIntermedie, numeroDiStazioni, distanzaStazionePartenza, distanzaStazioneArrivo, &percorso);
+//
+//        //se NON esiste il percorso
+//        if(numeroFermate==0){
+//            printf("nessun percorso\n");
+//        }
+//        //stampare il percorso
+//        else{
+//            stampaPercorso(numeroFermate, percorso, distanzaStazionePartenza, distanzaStazioneArrivo);
+//        }
 
         //deallochiamo memoria che NON ci serve più per i prossimi percorsi
         free(stazioniIntermedie);
-        free(percorso);
+//        free(percorso);
     }
 }
 
