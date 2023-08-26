@@ -2001,6 +2001,15 @@ int indiceStazione(struct ArrayNodeStazione stazioni[], int numeroStazioni, unsi
     return -1;
 }
 
+/**
+ * Pianifica percorso in avanti - partenza < arrivo.
+ *
+ * @param stazioni stazioni tra partenza e arrivo.
+ * @param numeroDiStazioni numero di stazioni tra partenza e arrivo.
+ * @param partenza stazione di partenza.
+ * @param arrivo stazione di arrivo.
+ * @return percorso tra la stazione di partenza e quella di arrivo, NULL se NON esiste.
+ */
 int *percorsoPianificatoInAvanti(struct ArrayNodeStazione stazioni[], int numeroDiStazioni, int partenza, int arrivo){
     /**
      * Percorso da ritornare.
@@ -2063,7 +2072,6 @@ int *percorsoPianificatoInAvanti(struct ArrayNodeStazione stazioni[], int numero
         indiceStazioneDaSuperare=indiceStazionePiuLontana+ stazionePiuLontana((stazioni+indiceStazionePiuLontana), (numeroDiStazioni-indiceStazionePiuLontana), stazioni[indiceStazionePiuLontana].autonomiaMassima);
         //ricerca migliore stazione fino a questo momento
         for (int i = indiceStazionePiuLontana-1; i > indiceCorrente; --i) {
-            //TODO al posto stazioni[i].autonomiaMassima --> trovaStazione(stazioni, percorsoTrovato[i]).autonomiaMassima
             if(stazioni[i].autonomiaMassima>=(stazioni[indiceStazioneDaSuperare].distanza-stazioni[i].distanza)){
                 indiceStazionePiuLontana=i;
                 indiceStazioneDaSuperare=indiceStazionePiuLontana+ stazionePiuLontana((stazioni+indiceStazionePiuLontana), (numeroDiStazioni-indiceStazionePiuLontana), stazioni[indiceStazionePiuLontana].autonomiaMassima);
@@ -2080,7 +2088,6 @@ int *percorsoPianificatoInAvanti(struct ArrayNodeStazione stazioni[], int numero
             indiceStazionePrecedente= indiceStazione(stazioni, numeroDiStazioni, percorsoTrovato[indiceDaControllare-1]);
             //ricerca stazioni ottimali
             for (int i = indiceStazioneControllare-1; i > indiceStazionePrecedente; --i) {
-                //TODO al posto stazioni[i].autonomiaMassima --> trovaStazione(stazioni, percorsoTrovato[i]).autonomiaMassima
                 if (stazioni[i].autonomiaMassima>=(distanzaDaControllare-stazioni[i].distanza)){
                     ultimoControllo=0;
                     //aggiunta stazione con autonomia massima al percorso da trovare
@@ -2125,6 +2132,20 @@ int *percorsoPianificatoInAvanti(struct ArrayNodeStazione stazioni[], int numero
     }
 }
 
+//TODO
+int *percorsoPianificatoAllIndietro(struct ArrayNodeStazione stazioni[], int numeroDiStazioni, int partenza, int arrivo){
+    return NULL;
+}
+
+/**
+ * Pianifica percorso.
+ *
+ * @param stazioni stazioni tra partenza e arrivo.
+ * @param numeroDiStazioni numero di stazioni tra partenza e arrivo.
+ * @param partenza stazione di partenza.
+ * @param arrivo stazione di arrivo.
+ * @return percorso tra la stazione di partenza e quella di arrivo, NULL se NON esiste.
+ */
 int *percorsoPianificato(struct ArrayNodeStazione stazioni[], int numeroDiStazioni, int partenza, int arrivo){
     //calcolare il percorso all'andata
     if(partenza<arrivo){
@@ -2132,10 +2153,16 @@ int *percorsoPianificato(struct ArrayNodeStazione stazioni[], int numeroDiStazio
     }
     //calcolare il percorso al ritorno
     else{
-        return NULL;
+        return percorsoPianificatoAllIndietro(stazioni, numeroDiStazioni, partenza, arrivo);
     }
 }
 
+/**
+ * Stampa il percorso trovato.
+ *
+ * @param percorso percorso da stampare.
+ * @param arrivo stazione di arrivo.
+ */
 void stampaPercorsoPianificato(const int *percorso, int arrivo){
     if (percorso==NULL){
         printf("nessun percorso\n");
@@ -2152,7 +2179,7 @@ void stampaPercorsoPianificato(const int *percorso, int arrivo){
 
 
 /**
- * Pianifica percorso dalla stazione di partenza a quella di arrivo.
+ * Gestione comando di pianifica percorso dalla stazione di partenza a quella di arrivo.
  */
 void PianificaPercorso(){
     /**
@@ -2196,25 +2223,27 @@ void PianificaPercorso(){
          * Tutte le stazioni comprese tra la partenza e l'arrivo.
          */
         struct ArrayNodeStazione *stazioniIntermedie= tutteLeStazioni(distanzaStazionePartenza, distanzaStazioneArrivo, &numeroDiStazioni);
-        /**
-         * Percorso minimo dalla stazione di partenza fino a quella di arrivo.
-         */
+//        /**
+//         * Percorso minimo dalla stazione di partenza fino a quella di arrivo.
+//         */
 //        struct PercorsoNode *percorso=(struct PercorsoNode *) calloc(5*numeroDiStazioni, sizeof(struct PercorsoNode));
 
         //TODO nuovo pianifica percorso
 //        int *percorsoDaTrovare=(int *) calloc(numeroDiStazioni, sizeof(int));
         int *percorsoTrovato= percorsoPianificato(stazioniIntermedie, numeroDiStazioni, distanzaStazionePartenza, distanzaStazioneArrivo);
+        //se NON esiste il percorso
         if(percorsoTrovato==NULL){
             printf("nessun percorso\n");
         }
+        //se esiste il percorso
         else{
             //TODO stampa il percorso
             stampaPercorsoPianificato(percorsoTrovato, distanzaStazioneArrivo);
         }
 
-        /**
-         * Numero di fermate che bisogna compiere nel percorso.
-         */
+//        /**
+//         * Numero di fermate che bisogna compiere nel percorso.
+//         */
 //        int numeroFermate= aStar(stazioniIntermedie, numeroDiStazioni, distanzaStazionePartenza, distanzaStazioneArrivo, &percorso);
 //
 //        //se NON esiste il percorso
