@@ -2053,7 +2053,7 @@ int *percorsoPianificatoInAvanti(struct ArrayNodeStazione stazioni[], int numero
 
     //aggiunta della partenza al percorso da ricercare
     percorsoTrovato[indicePercorsoTrovato]=partenza;
-    ++percorsoTrovato;
+    ++indicePercorsoTrovato;
 
     while (stazioni[indiceStazionePiuLontana].distanza!=arrivo){
         indiceStazioneDaSuperare=indiceStazionePiuLontana+ stazionePiuLontana((stazioni+indiceStazionePiuLontana), (numeroDiStazioni-indiceStazionePiuLontana), stazioni[indiceStazionePiuLontana].autonomiaMassima);
@@ -2112,9 +2112,6 @@ int *percorsoPianificatoInAvanti(struct ArrayNodeStazione stazioni[], int numero
             percorsoTrovato=(int *) realloc(percorsoTrovato, nuovaDimensionePercorso* sizeof(int));
         }
         percorsoTrovato[indicePercorsoTrovato]=arrivo;
-        for (int i = 0; i < indicePercorsoTrovato; ++i) {
-            printf("%d ", percorsoTrovato[i]);
-        }
         return percorsoTrovato;
     }
     else{
@@ -2141,14 +2138,10 @@ void stampaPercorsoPianificato(const int *percorso, int arrivo){
     else{
         int i=0;
         do {
-            if(percorso[i]==arrivo){
-                printf("%d\n", percorso[i]);
-            }
-            else{
-                printf("%d ", percorso[i]);
-            }
+            printf("%d ", percorso[i]);
             ++i;
         } while (percorso[i]!=arrivo);
+        printf("%d\n", percorso[i]);
     }
 }
 
