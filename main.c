@@ -2311,7 +2311,7 @@ int *percorsoPianificatoAllIndietro(struct ArrayNodeStazione stazioni[], int num
     }
 
     //possiamo arrivare alla stazione di arrivo
-    if (stazioni[indiceStazioneInAvanti(stazioni, numeroDiStazioni, percorsoTrovato[indicePercorsoTrovato - 1])].autonomiaMassima >= (arrivo - percorsoTrovato[indicePercorsoTrovato - 1])){
+    if (stazioni[indiceStazioneInAvanti(stazioni, numeroDiStazioni, percorsoTrovato[indicePercorsoTrovato - 1])].autonomiaMassima >= abs(arrivo - percorsoTrovato[indicePercorsoTrovato - 1])){
         //aggiunta stazione di arrivo
         if(indicePercorsoTrovato==numeroDiStazioni){
             nuovaDimensionePercorso=indicePercorsoTrovato*2;
