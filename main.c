@@ -1146,42 +1146,10 @@ int *percorsoPianificatoAllIndietro(struct ArrayNodeStazione stazioni[], int num
      * Indice della stazione da superare.
      */
     int indiceStazioneDaSuperare;
-//    /**
-//     * Indice della posizione dell'array percorsoTrovato da controllare se rispetta i vincoli richiesti.
-//     */
-//    int indiceDaControllare=indicePercorsoTrovato;
-//    /**
-//     * È l'ultimo controllo - sono stati rispettati tutti i vincoli richiesti.
-//     */
-//    int ultimoControllo=0;
-//    /**
-//     * Distanza da controllare.
-//     */
-//    int distanzaDaControllare=0;
-//    /**
-//     * Indice della stazione da controllare.
-//     */
-//    int indiceStazioneControllare=0;
-//    /**
-//     * Indice della stazione precedente rispetto a indiceStazioneControllare.
-//     */
-//    int indiceStazionePrecedente=0;
     /**
      * Nuova dimensione del percorso da ritornare - per realloc.
      */
     int nuovaDimensionePercorso;
-//    /**
-//     * Indice dell'ultima stazione prima dell'arrivo - serve per controllare se ce ne sono altre con kilometraggio minore.
-//     */
-//    int indiceUltimaStazioneCercata=0;
-//    /**
-//     * Indice della penultima stazione prima dell'arrivo - serve per controllare se ce ne sono altre con kilometraggio minore.
-//     */
-//    int indicePenultimaStazioneCercata=0;
-//    /**
-//     * Indice che serve per dare un limite nella ricerca delle stazioni più ottimali.
-//     */
-//    int indicePosizioneLimite=0;
 
 
     //aggiunta della partenza al percorso da ricercare
@@ -1251,32 +1219,6 @@ int *percorsoPianificatoAllIndietro(struct ArrayNodeStazione stazioni[], int num
         }
         --indicePercorsoTrovato;
     }
-
-
-
-
-
-
-//    while (indicePercorsoTrovato>1){
-//        indiceStazionePiuLontana= indiceStazioneAllIndietro(stazioni, numeroDiStazioni, percorsoTrovato[indicePercorsoTrovato]);
-//        indiceUltimaStazioneCercata= indiceStazioneAllIndietro(stazioni, numeroDiStazioni, percorsoTrovato[indicePercorsoTrovato-1]);
-//        indicePenultimaStazioneCercata= indiceStazioneAllIndietro(stazioni, numeroDiStazioni, percorsoTrovato[indicePercorsoTrovato-2]);
-//        indicePosizioneLimite= stazionePiuLontana(stazioni, numeroDiStazioni, stazioni[indicePenultimaStazioneCercata].autonomiaMassima);
-//
-//        for (int i = indicePosizioneLimite; i <= indiceUltimaStazioneCercata; ++i) {
-//            if (stazioni[i].autonomiaMassima>= abs((int) stazioni[i].distanza-(int) stazioni[indiceStazionePiuLontana].distanza)){
-//                printf(" ->%d\n", percorsoTrovato[indicePercorsoTrovato-1]);
-//                percorsoTrovato[indicePercorsoTrovato-1]=(int) stazioni[i].distanza;
-//
-//            }
-//        }
-//        printf(" ->PercorsoTrovato ");
-//        for (int j = 0; j < indicePercorsoTrovato; ++j) {
-//            printf("%d ", percorsoTrovato[j]);
-//        }
-//        printf("\n");
-//        --indicePercorsoTrovato;
-//    }
 
     //percorso trovato
     return percorsoTrovato;
