@@ -1058,6 +1058,7 @@ int *percorsoPianificatoInAvanti(struct ArrayNodeStazione stazioni[], int numero
         //la stazione più lontana è quella massima ==> percorso NON trovato
         if (indiceStazionePiuLontana==indiceStazioneDaSuperare){
             //percorso NON trovato
+            free(percorsoTrovato);
             return NULL;
         }
 
