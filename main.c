@@ -1296,7 +1296,7 @@ int *percorsoPianificato(struct ArrayNodeStazione stazioni[], int numeroDiStazio
     if(partenza<arrivo){
         return percorsoPianificatoInAvanti(stazioni, numeroDiStazioni, partenza, arrivo);
     }
-        //calcolare il percorso al ritorno
+    //calcolare il percorso al ritorno
     else{
         return percorsoPianificatoAllIndietro(stazioni, numeroDiStazioni, partenza, arrivo);
     }
@@ -1309,15 +1309,18 @@ int *percorsoPianificato(struct ArrayNodeStazione stazioni[], int numeroDiStazio
  * @param arrivo stazione di arrivo.
  */
 void stampaPercorsoPianificato(const int *percorso, int arrivo){
+    //se NON esiste un percorso
     if (percorso==NULL){
         printf("nessun percorso\n");
     }
+    //se esiste un percorso stampalo
     else{
         int i=0;
         do {
             printf("%d ", percorso[i]);
             ++i;
         } while (percorso[i]!=arrivo);
+        //stampa l'ultima stazione - l'arrivo
         printf("%d\n", percorso[i]);
     }
 }
@@ -1423,6 +1426,10 @@ void AggiungiAuto(){
      * Serve per far ritornare la scanf, se no NON compila.
      */
     int returnScanf;
+    /**
+     * Stazione di interesse.
+     */
+    struct HashNodeStazione *stazione;
 
 
     //lettura distanzaStazione della stazione a cui aggiungere una macchina
@@ -1443,10 +1450,7 @@ void AggiungiAuto(){
     }
     //stazione presente
     else{
-        /**
-         * Stazione di interesse.
-         */
-        struct HashNodeStazione *stazione= ricercaStazione(autostrada, distanzaStazione);
+        stazione= ricercaStazione(autostrada, distanzaStazione);
 
         //leggi chiave auto da aggiungere
         returnScanf=scanf("%d", &autonomiaAutoDaAggiungere);
@@ -1479,6 +1483,7 @@ void DemolisciStazione(){
      * Serve per far ritornare la scanf, se no NON compila.
      */
     int returnScanf;
+
 
     //lettura distanza della stazione da demolire
     returnScanf=scanf("%d", &distanza);
@@ -1517,6 +1522,10 @@ void RottamaAuto(){
      * Serve per far ritornare la scanf, se no NON compila.
      */
     int returnScanf;
+    /**
+     * Stazione di interesse.
+     */
+    struct HashNodeStazione *stazione;
 
 
     //lettura distanzaStazione della stazione da cui rottamare una macchina
@@ -1537,10 +1546,7 @@ void RottamaAuto(){
     }
     //stazione presente
     else{
-        /**
-         * Stazione di interesse.
-         */
-        struct HashNodeStazione *stazione= ricercaStazione(autostrada, distanzaStazione);
+        stazione= ricercaStazione(autostrada, distanzaStazione);
 
         //leggi chiave auto da rottamare
         returnScanf=scanf("%d", &autonomiaAutoDaRottamare);
@@ -1583,6 +1589,19 @@ void PianificaPercorso(){
      * Serve per far ritornare la scanf, se no NON compila.
      */
     int returnScanf;
+    /**
+     * Numero di stazioni esistenti dalla partenza all'arrivo.
+     */
+    int numeroDiStazioni=0;
+    /**
+     * Tutte le stazioni comprese tra la partenza e l'arrivo.
+     */
+    struct ArrayNodeStazione *stazioniIntermedie;
+    /**
+     * Percorso tra la stazione di partenza e quella di arrivo ottimale.
+     */
+    int *percorsoTrovato;
+
 
     //lettura distanza delle stazioni di partenza e di arrivo
     returnScanf=scanf("%d", &distanzaStazionePartenza);
@@ -1604,49 +1623,25 @@ void PianificaPercorso(){
     }
     //ricerca il percorso ottimale per andare dalla partenza all'arrivo
     else{
-        /**
-         * Numero di stazioni esistenti dalla partenza all'arrivo.
-         */
-        int numeroDiStazioni=0;
-        /**
-         * Tutte le stazioni comprese tra la partenza e l'arrivo.
-         */
-        struct ArrayNodeStazione *stazioniIntermedie= tutteLeStazioni(distanzaStazionePartenza, distanzaStazioneArrivo, &numeroDiStazioni);
-//        /**
-//         * Percorso minimo dalla stazione di partenza fino a quella di arrivo.
-//         */
-//        struct PercorsoNode *percorso=(struct PercorsoNode *) calloc(5*numeroDiStazioni, sizeof(struct PercorsoNode));
+        //selezionare tutte le stazioni tra quella di partenza e quella di arrivo
+        stazioniIntermedie= tutteLeStazioni(distanzaStazionePartenza, distanzaStazioneArrivo, &numeroDiStazioni);
+        //percorso ricercato
+        percorsoTrovato= percorsoPianificato(stazioniIntermedie, numeroDiStazioni, distanzaStazionePartenza, distanzaStazioneArrivo);
 
-        //TODO nuovo pianifica percorso
-//        int *percorsoDaTrovare=(int *) calloc(numeroDiStazioni, sizeof(int));
-        int *percorsoTrovato= percorsoPianificato(stazioniIntermedie, numeroDiStazioni, distanzaStazionePartenza, distanzaStazioneArrivo);
         //se NON esiste il percorso
         if(percorsoTrovato==NULL){
             printf("nessun percorso\n");
         }
-        //se esiste il percorso
+        //se esiste il percorso stamparlo
         else{
-            //TODO stampa il percorso
             stampaPercorsoPianificato(percorsoTrovato, distanzaStazioneArrivo);
         }
 
-//        /**
-//         * Numero di fermate che bisogna compiere nel percorso.
-//         */
-//        int numeroFermate= aStar(stazioniIntermedie, numeroDiStazioni, distanzaStazionePartenza, distanzaStazioneArrivo, &percorso);
-//
-//        //se NON esiste il percorso
-//        if(numeroFermate==0){
-//            printf("nessun percorso\n");
-//        }
-//        //stampare il percorso
-//        else{
-//            stampaPercorso(numeroFermate, percorso, distanzaStazionePartenza, distanzaStazioneArrivo);
-//        }
-
         //deallochiamo memoria che NON ci serve più per i prossimi percorsi
         free(stazioniIntermedie);
-//        free(percorsoTrovato);
+        if (percorsoTrovato!=NULL){
+            free(percorsoTrovato);
+        }
     }
 }
 
@@ -1714,6 +1709,5 @@ int main() {
         ProcessaComando(comando);
     }while(fine!=EOF); //se leggi EOF termina
 
-//    deallocaMemoria();
     return 0;
 }
