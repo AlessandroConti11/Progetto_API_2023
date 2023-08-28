@@ -13,7 +13,7 @@
 #define LUNGHEZZA_MAX_COMANDI 20
 
 /**
- * Define --> Dimensione iniziale della HashTable che rappresetna un parco auto.
+ * Define --> Dimensione iniziale della HashTable che rappresenta il parco auto.
  */
 #define DIMENSIONE_INIZIALE_PARCO_AUTO 13
 
@@ -23,12 +23,12 @@
 #define DIMENSIONE_INIZIALE_AUTOSTRADA 31
 
 /**
- * Define --> Percentuale oltre al quale andrà reallocato la HashTable
+ * Define --> Percentuale oltre al quale andrà reallocato la HashTable.
  */
 #define PERCENTUALE_REALLOC 0.75
 
 /**
- * Define --> Costante di Knuth, serve per la funzione di hash
+ * Define --> Costante di Knuth, serve per la funzione di hash.
  */
 #define COSTANTE_DI_KNUTH 2654435769
 
@@ -36,7 +36,7 @@
 
 //STRUCT
 /**
- * Struct --> Rappresenta una macchina.
+ * Struct --> Rappresenta un'auto.
  */
 struct HashNodeAuto{
     /**
@@ -50,11 +50,11 @@ struct HashNodeAuto{
 };
 
 /**
- * Struct --> Rappresenta il parco auto.
+ * Struct --> Rappresenta l'HashTable del parco auto.
  */
 struct HashTableParcoAuto{
     /**
-     * Parco auto.
+     * Auto.
      */
     struct HashNodeAuto **autoNode;
     /**
@@ -90,11 +90,11 @@ struct HashNodeStazione{
 };
 
 /**
- * Struct --> Rappresenta l'autostrada.
+ * Struct --> Rappresenta l'HashTable dell'autostrada.
  */
 struct HashTableAutostrada{
     /**
-     * Parco auto.
+     * Stazioni.
      */
     struct HashNodeStazione **stazioni;
     /**
@@ -108,7 +108,7 @@ struct HashTableAutostrada{
 };
 
 /**
- * Struct --> Rappresenta una posizione nell'Array contenente tutte le stazioni tra quella iniziale e quella di arrivo.
+ * Struct --> Rappresenta una posizione nell'Array che contiene tutte le stazioni tra quella di partenza e quella di arrivo.
  */
 struct ArrayNodeStazione{
     /**
@@ -125,7 +125,7 @@ struct ArrayNodeStazione{
 
 //VARIABILI GLOBALI
 /**
- * Autostrada.
+ * Variabile Globale --> Rappresenta l'autostrada.
  */
 struct HashTableAutostrada *autostrada=NULL;
 
@@ -136,12 +136,12 @@ struct HashTableAutostrada *autostrada=NULL;
  * Funzione di hash --> ritorna la posizione dato il valore richiesto.
  *
  * @param chiave valore d'interesse.
- * @param capacita dimensione della HashTable.
+ * @param capacita capacità della HashTable.
  * @return la posizione della chiave nella HashTable.
  */
 unsigned int funzioneDiHash(unsigned int chiave, unsigned int capacita){
-    //funzione di hash di moltiplicazione modulare
-    //utilizzando la costante di Knuth
+    //(chiave * Knuth) mod capacità
+    //funzione di hash di moltiplicazione modulare utilizzando la costante di Knuth
     return (int) ((long)(chiave * COSTANTE_DI_KNUTH) % capacita);
 }
 
@@ -152,6 +152,7 @@ unsigned int funzioneDiHash(unsigned int chiave, unsigned int capacita){
  * @return la nuova capacità della HashTable.
  */
 int nuovaCapacita(unsigned int capacitaIniziale){
+    //capacità * 2 + 11 --> maggiore probabilità di ottenere numeri primi
     //ritorna la nuova capacità della HashTable
     return (int) capacitaIniziale*2+11;
 }
@@ -172,17 +173,17 @@ struct HashTableParcoAuto *creaParcoAuto(unsigned int capacitaIniziale){
     struct HashTableParcoAuto *hashTable=(struct HashTableParcoAuto *) malloc(sizeof(struct HashTableParcoAuto));
 
 
-    //inizializza valori
+    //inizializzare i valori
     hashTable->dimensione=0;
     hashTable->capacita=capacitaIniziale;
     hashTable->autoNode=(struct HashNodeAuto **) calloc(capacitaIniziale, sizeof(struct HashNodeAuto *));
 
-    //ritorna la HashTable inizializzata
+    //ritornare la HashTable inizializzata
     return hashTable;
 }
 
 /**
- * Reinizializza il parco auto --> da una HashTable già esistente la realloca in un'altra con capacità maggiore.
+ * Reinizializza l'HashTable del parco auto.
  *
  * @param parcoAuto il parco auto da reallocare.
  */
@@ -200,8 +201,8 @@ void reHashParcoAuto(struct HashTableParcoAuto *parcoAuto){
      */
     struct HashNodeAuto **nuovaHashTable=(struct HashNodeAuto **) calloc(capacitaNuova, sizeof(struct HashNodeAuto *));
     /**
-    * Nodo della HashTable corrente.
-    */
+     * Nodo della HashTable corrente.
+     */
     struct HashNodeAuto *corrente=NULL;
     /**
      * Nodo successivo da vedere.
@@ -209,18 +210,18 @@ void reHashParcoAuto(struct HashTableParcoAuto *parcoAuto){
     struct HashNodeAuto *prossimo=NULL;
 
 
-    //spostiamo dalla vecchia HashTable a quella nuova
+    //spostare dalla vecchia HashTable a quella nuova
     for (int i = 0; i < parcoAuto->capacita; ++i) {
         corrente=parcoAuto->autoNode[i];
 
-        //fino a che NON abbiamo finito di spostare tutte le HashNode
+        //fino a che NON si è finito di spostare tutte le HashNode
         while(corrente!=NULL){
-            //salviamo il prossimo HashNode da visitare
+            //salvare il prossimo HashNode da visitare
             prossimo=corrente->successivo;
-            //salviamo il nuovo indice in cui andare a mettere la HashNode corrente
+            //salvare il nuovo indice in cui andare a mettere la HashNode corrente
             nuovoIndice= funzioneDiHash(corrente->autonomia, (unsigned int) capacitaNuova);
 
-            //spostiamo il nodo
+            //spostare il nodo
             corrente->successivo=nuovaHashTable[nuovoIndice];
             nuovaHashTable[nuovoIndice]=corrente;
             //il nodo corrente da vedere diventa il prossimo
@@ -228,11 +229,11 @@ void reHashParcoAuto(struct HashTableParcoAuto *parcoAuto){
         }
     }
 
-    //eliminiamo la vecchia stazioni
+    //eliminare il vecchio parco auto
     free(parcoAuto->autoNode);
-    //aggiungiamo la nuova stazioni
+    //aggiungere il nuovo parco auto
     parcoAuto->autoNode=nuovaHashTable;
-    //aggiorniamo la capacità
+    //aggiornare la capacità
     parcoAuto->capacita=(unsigned int) capacitaNuova;
 }
 
@@ -242,9 +243,9 @@ void reHashParcoAuto(struct HashTableParcoAuto *parcoAuto){
  * @param parcoAuto il parco auto richiesto.
  * @param autonomia l'autonomia dell'auto da aggiungere al parco auto.
  */
-void aggiungiAuto(struct HashTableParcoAuto *parcoAuto, unsigned int autonomia){
+void aggiungiAutoAlParcoAuto(struct HashTableParcoAuto *parcoAuto, unsigned int autonomia){
     /**
-     * Indice in cui inserire la chiave.
+     * Indice in cui inserire la macchina.
      */
     unsigned int indice= funzioneDiHash(autonomia, parcoAuto->capacita);
     /**
@@ -253,14 +254,14 @@ void aggiungiAuto(struct HashTableParcoAuto *parcoAuto, unsigned int autonomia){
     struct HashNodeAuto *nuovoNodo=(struct HashNodeAuto *) malloc(sizeof(struct HashNodeAuto));
 
 
-    //inserimento valori nel nuovo HashNode
+    //inserire valori della nuova macchina
     nuovoNodo->autonomia=autonomia;
     nuovoNodo->successivo=parcoAuto->autoNode[indice];
     parcoAuto->autoNode[indice]=nuovoNodo;
     //è stato aggiunto un nuovo nodo, questo implica che bisogna aumentare la dimensione della HashTable
     parcoAuto->dimensione++;
 
-    //bisogna reallocare la HashTable
+    //se bisogna reallocare la HashTable
     if(parcoAuto->dimensione > (int) parcoAuto->capacita*PERCENTUALE_REALLOC){
         reHashParcoAuto(parcoAuto);
     }
@@ -272,48 +273,46 @@ void aggiungiAuto(struct HashTableParcoAuto *parcoAuto, unsigned int autonomia){
  * @param parcoAuto il parco auto che contiene la macchina da eliminare.
  * @param autonomia la macchina da eliminare.
  */
-void eliminaAuto(struct HashTableParcoAuto *parcoAuto, unsigned int autonomia){
+void eliminaAutoDalParcoAuto(struct HashTableParcoAuto *parcoAuto, unsigned int autonomia){
     /**
-     * Indice nel quale si trova la chiave.
+     * Indice nel quale si trova la macchina.
      */
     unsigned int indice= funzioneDiHash(autonomia, parcoAuto->capacita);
     /**
-     * Nodo corrente,
-     * corrente=corrente->successivo.
+     * Nodo corrente.
      */
     struct HashNodeAuto *corrente=parcoAuto->autoNode[indice];
     /**
-     * Nodo precedente,
-     * precedente=corrente.
+     * Nodo precedente.
      */
     struct HashNodeAuto *precedente=NULL;
 
 
-    //trova il nodo con la chiave corrispondente, assegna corrente AND precedente
+    //trovare il nodo con la chiave corrispondente, assegnare corrente AND precedente
     while (corrente!=NULL && corrente->autonomia!=autonomia){
         precedente=corrente;
         corrente=corrente->successivo;
     }
 
-    //chiave NON trovata
+    //macchina NON trovata
     if(corrente==NULL){
         return;
     }
-        //chiave trovata
+    //macchina trovata
     else{
         //il nodo da eliminare è il primo della lista presente nella posizione indicata
         if(precedente==NULL){
             parcoAuto->autoNode[indice]=corrente->successivo;
         }
-            //il nodo da eliminare NON è il primo della lista presente nella posizione indicate
+        //il nodo da eliminare NON è il primo della lista presente nella posizione indicate
         else{
             precedente->successivo=corrente->successivo;
         }
     }
 
-    //dealloca il HashNode
+    //eliminare la macchina
     free(corrente);
-    //riduciamo il numero di elementi presenti nella HashTable
+    //ridurre il numero di elementi presenti nella HashTable
     parcoAuto->dimensione--;
 }
 
@@ -324,9 +323,9 @@ void eliminaAuto(struct HashTableParcoAuto *parcoAuto, unsigned int autonomia){
  * @param autonomia l'autonomia della macchina da ricercare.
  * @return 1 se la macchina è presente nel parco auto, 0 se NON è presente.
  */
-int ricercaAuto(struct HashTableParcoAuto *parcoAuto, unsigned int autonomia){
+int ricercaAutoNelParcoAuto(struct HashTableParcoAuto *parcoAuto, unsigned int autonomia){
     /**
-     * Indice nel quale si trova la chiave.
+     * Indice nel quale si trova la macchina.
      */
     unsigned int indice= funzioneDiHash(autonomia, parcoAuto->capacita);
     /**
@@ -337,17 +336,18 @@ int ricercaAuto(struct HashTableParcoAuto *parcoAuto, unsigned int autonomia){
 
     //fino a che ci sono altri HashNode nella posizione richiesta
     while(corrente!=NULL){
-        //abbiamo trovato la chiave
+        //se la chiave è stata trovata
         if(corrente->autonomia==autonomia){
+            //macchina trovata
             return 1;
         }
-        //guardiamo nel prossimo HashNode
+        //guardare nel prossimo HashNode
         else{
             corrente=corrente->successivo;
         }
     }
 
-    //NON abbiamo trovato la chiave
+    //macchina NON trovata
     return 0;
 }
 
@@ -358,7 +358,7 @@ int ricercaAuto(struct HashTableParcoAuto *parcoAuto, unsigned int autonomia){
  * @param dimensioneMassima la dimensione che ha il parco auto - capacità attuale.
  * @return l'autonomia massima presente nel parco auto.
  */
-unsigned int ricercaMassimaAutonomia(struct HashTableParcoAuto *parcoAuto, unsigned int dimensioneMassima){
+unsigned int ricercaMassimaAutonomiaNelParcoAuto(struct HashTableParcoAuto *parcoAuto, unsigned int dimensioneMassima){
     /**
      * Valore massimo da ritornare.
      */
@@ -372,17 +372,18 @@ unsigned int ricercaMassimaAutonomia(struct HashTableParcoAuto *parcoAuto, unsig
     //per tutta la dimensione della HashTable
     for (int i = 0; i < dimensioneMassima; ++i) {
         corrente=parcoAuto->autoNode[i];
-        //controllo tutta la lista presente nella posizione
+        //controllare tutta la lista presente nella posizione
         while (corrente!=NULL){
             //se corrente è maggiore del massimo modificalo
             if(corrente->autonomia>massimo){
+                //aggiornare il valore massimo da ritornare
                 massimo=corrente->autonomia;
             }
             corrente=corrente->successivo;
         }
     }
 
-    //ritorna la massima autonomia
+    //ritornare la massima autonomia
     return massimo;
 }
 
@@ -402,19 +403,19 @@ struct HashTableAutostrada *creaAutostrada(unsigned int capacitaIniziale){
     struct HashTableAutostrada *hashTable=(struct HashTableAutostrada *) malloc(sizeof(struct HashTableAutostrada));
 
 
-    //inizializza valori
+    //inizializzare i valori
     hashTable->capacita=capacitaIniziale;
     hashTable->dimensione=0;
     hashTable->stazioni=(struct HashNodeStazione **) calloc(hashTable->capacita, sizeof(struct HashNodeStazione *));
 
-    //ritorna la HashTable inizializzata
+    //ritornare la HashTable inizializzata
     return hashTable;
 }
 
 /**
- * Reinizializza il autostrada --> da una HashTable già esistente la realloca in un'altra con capacità maggiore.
+ * Reinizializza l'HashTable dell'autostrada.
  *
- * @param htAutostrada l'autostrada da reallocare.
+ * @param htAutostrada l'autostrada da reinizializzare.
  */
 void reHashAutostrada(struct HashTableAutostrada *htAutostrada){
     /**
@@ -439,43 +440,43 @@ void reHashAutostrada(struct HashTableAutostrada *htAutostrada){
     struct HashNodeStazione *prossimo=NULL;
 
 
-    //spostiamo dalla vecchia HashTable a quella nuova
+    //spostare dalla vecchia HashTable a quella nuova
     for (int i = 0; i < htAutostrada->capacita; ++i) {
         corrente=htAutostrada->stazioni[i];
 
-        //fino a che NON abbiamo finito di spostare tutte le HashNode
+        //fino a che NON si è finito di spostare tutte le HashNode
         while(corrente!=NULL){
-            //salviamo il prossimo HashNode da visitare
+            //salvare il prossimo HashNode da visitare
             prossimo=corrente->successivo;
-            //salviamo il nuovo indice in cui andare a mettere la HashNode corrente
+            //salvare il nuovo indice in cui andare a mettere la HashNode corrente
             nuovoIndice= funzioneDiHash(corrente->distanza, capacitaNuova);
 
-            //spostiamo il nodo
+            //spostare il nodo
             corrente->successivo=nuovaHashTable[nuovoIndice];
             nuovaHashTable[nuovoIndice]=corrente;
-            //il nodo corrente da vedere diventa il prossimo
+            //il nodo corrente da controllare diventa il prossimo
             corrente=prossimo;
         }
     }
 
-    //eliminiamo la vecchia stazioni
+    //eliminare la vecchia stazione
     free(htAutostrada->stazioni);
-    //aggiungiamo la nuova stazioni
+    //aggiungere la nuova stazione
     htAutostrada->stazioni=nuovaHashTable;
-    //aggiorniamo la capacità
+    //aggiornare la capacità
     htAutostrada->capacita=capacitaNuova;
 }
 
 /**
- * Aggiungi stazione all'autostrada.
+ * Aggiungi la stazione all'autostrada.
  *
- * @param htAutostrada l'autostrada a cui vanno aggiunte le stazioni.
+ * @param htAutostrada l'autostrada a cui va aggiunta la stazione.
  * @param distanza la distanza a cui si trova la stazione che vogliamo aggiungere.
  * @param parcoAuto il parco auto contenuto nella stazione indicata.
  */
-void aggiungiStazione(struct HashTableAutostrada *htAutostrada, unsigned int distanza, struct HashTableParcoAuto *parcoAuto, unsigned int maxAutonomia){
+void aggiungiStazioneAllAutostrada(struct HashTableAutostrada *htAutostrada, unsigned int distanza, struct HashTableParcoAuto *parcoAuto, unsigned int maxAutonomia){
     /**
-     * Indice in cui inserire la chiave.
+     * Indice in cui inserire la stazione.
      */
     unsigned int indice= funzioneDiHash(distanza, htAutostrada->capacita);
     /**
@@ -484,7 +485,7 @@ void aggiungiStazione(struct HashTableAutostrada *htAutostrada, unsigned int dis
     struct HashNodeStazione *nuovoNodo=(struct HashNodeStazione *) malloc(sizeof(struct HashNodeStazione));
 
 
-    //inserimento valori nel nuovo HashNode
+    //inserire i valori nel nuovo HashNode
     nuovoNodo->distanza=distanza;
     nuovoNodo->parcoAuto=parcoAuto;
     nuovoNodo->autonomiaMassima=maxAutonomia;
@@ -493,96 +494,93 @@ void aggiungiStazione(struct HashTableAutostrada *htAutostrada, unsigned int dis
     //è stato aggiunto un nuovo nodo, questo implica che bisogna aumentare la dimensione della HashTable
     htAutostrada->dimensione++;
 
-    //bisogna reallocare la HashTable
+    //se bisogna reallocare la HashTable
     if(htAutostrada->dimensione > htAutostrada->capacita*PERCENTUALE_REALLOC){
         reHashAutostrada(htAutostrada);
     }
 }
 
 /**
- * Elimina stazione dall'autostrada.
+ * Elimina la stazione richiesta dall'autostrada.
  *
  * @param htAutostrada l'autostrada in cui si trova la stazione.
  * @param distanza la distanza a cui si trova la stazione da eliminare.
  */
-void eliminaStazione(struct HashTableAutostrada *htAutostrada, unsigned int distanza){
+void eliminaStazioneDallAutostrada(struct HashTableAutostrada *htAutostrada, unsigned int distanza){
     /**
-     * Indice nel quale si trova la chiave.
+     * Indice nel quale si trova la stazione.
      */
     unsigned int indice= funzioneDiHash(distanza, htAutostrada->capacita);
     /**
-     * Nodo Corrente,
-     * stazioneCorrente=stazioneCorrente->successivo.
+     * Stazione corrente.
      */
     struct HashNodeStazione *stazioneCorrente=htAutostrada->stazioni[indice];
     /**
-     * Nodo Precedente,
-     * stazionePrecedente=stazioneCorrente.
+     * Stazione precedente.
      */
     struct HashNodeStazione *stazionePrecedente=NULL;
     /**
      * Auto corrente presente in posizione i nel parco auto.
      */
-    struct HashNodeAuto *corrente;
+    struct HashNodeAuto *autoCorrente;
     /**
-     * Nodo precedente da eliminare.
+     * Auto precedente da eliminare.
      */
-    struct HashNodeAuto *precedente;
+    struct HashNodeAuto *autoPrecedente;
 
 
-    //trova il nodo con la chiave corrispondente, assegna stazioneCorrente AND stazionePrecedente
+    //trovare il nodo con la chiave corrispondente, assegnare i valori a stazioneCorrente AND stazionePrecedente
     while (stazioneCorrente != NULL && stazioneCorrente->distanza != distanza){
         stazionePrecedente=stazioneCorrente;
         stazioneCorrente=stazioneCorrente->successivo;
     }
 
-    //chiave NON trovata
+    //stazione NON trovata
     if(stazioneCorrente == NULL){
         return;
     }
-    //chiave trovata
+    //stazione trovata
     else{
-        //il nodo da eliminare è il primo della lista presente nella posizione indicata
+        //se il nodo da eliminare è il primo della lista presente nella posizione indicata
         if(stazionePrecedente == NULL){
             htAutostrada->stazioni[indice]=stazioneCorrente->successivo;
         }
-        //il nodo da eliminare NON è il primo della lista presente nella posizione indicate
+        //se il nodo da eliminare NON è il primo della lista presente nella posizione indicate
         else{
             stazionePrecedente->successivo=stazioneCorrente->successivo;
         }
     }
 
-    //elimina macchine
+    //eliminare le auto presenti nel parco auto della stazione
     for (int i = 0; i < stazioneCorrente->parcoAuto->capacita; ++i) {
-        //nodo corrente
-        corrente=stazioneCorrente->parcoAuto->autoNode[i];
-        while (corrente!=NULL){
-            //nodo precedente
-            precedente=corrente;
-            corrente=corrente->successivo;
-            free(precedente);
+        autoCorrente=stazioneCorrente->parcoAuto->autoNode[i];
+        while (autoCorrente != NULL){
+            autoPrecedente=autoCorrente;
+            autoCorrente=autoCorrente->successivo;
+            //eliminare l'auto
+            free(autoPrecedente);
         }
     }
-    //elimina parcoAuto
+    //eliminare il parcoAuto
     free(stazioneCorrente->parcoAuto->autoNode);
-    //elimina hashTable parco auto
+    //eliminare l'HashTable che rappresenta il parco auto
     free(stazioneCorrente->parcoAuto);
-    //elimina stazione
+    //eliminare la stazione
     free(stazioneCorrente);
-    //riduciamo il numero di elementi presenti nella HashTable
+    //ridurre il numero di elementi presenti nella HashTable
     htAutostrada->dimensione--;
 }
 
 /**
  * Ricerca la stazione nell'autostrada alla distanza data.
  *
- * @param htAutostrada l'autostrada dove eseguire la ricerca.
+ * @param htAutostrada l'autostrada su cui eseguire la ricerca.
  * @param distanza la distanza a cui si trova la stazione interessate.
  * @return la stazione ricercata, se esiste, altrimenti ritorna NULL.
  */
-struct HashNodeStazione *ricercaStazione(struct HashTableAutostrada *htAutostrada, unsigned int distanza){
+struct HashNodeStazione *ricercaStazioneNellAutostrada(struct HashTableAutostrada *htAutostrada, unsigned int distanza){
     /**
-     * Indice nel quale si trova la chiave.
+     * Indice nel quale si trova la stazione.
      */
     unsigned int indice= funzioneDiHash(distanza, htAutostrada->capacita);
     /**
@@ -593,29 +591,30 @@ struct HashNodeStazione *ricercaStazione(struct HashTableAutostrada *htAutostrad
 
     //fino a che ci sono altri HashNode nella posizione richiesta
     while(corrente!=NULL){
-        //abbiamo trovato la chiave
+        //se è stata trovata la stazione
         if(corrente->distanza==distanza){
             return corrente;
         }
-        //guardiamo nel prossimo HashNode
+        //guardare nel prossimo HashNode
         else{
             corrente=corrente->successivo;
         }
     }
 
-    //NON abbiamo trovato la chiave --> corrente=NULL
+    //stazione NON trovata
     return NULL;
 }
 
 /**
  * Ritorna 1 se la stazione esiste sull'autostrada.
  *
+ * @param htAutostrada l'autostrada su cui eseguire la ricerca.
  * @param distanza distanza in cui si trova la stazione di interesse.
  * @return 1 se la stazione esiste sull'autostrada, 0 altrimenti
  */
-int StazioneGiaPresente(struct HashTableAutostrada *htAutostrada, unsigned int distanza){
+int stazioneGiaPresenteNellAutostrada(struct HashTableAutostrada *htAutostrada, unsigned int distanza){
     /**
-     * Indice nel quale si trova la chiave.
+     * Indice nel quale si trova la stazione.
      */
     unsigned int indice= funzioneDiHash(distanza, htAutostrada->capacita);
     /**
@@ -626,17 +625,17 @@ int StazioneGiaPresente(struct HashTableAutostrada *htAutostrada, unsigned int d
 
     //fino a che ci sono altri HashNode nella posizione richiesta
     while(corrente!=NULL){
-        //abbiamo trovato la chiave
+        //se è stata trovata la stazione
         if(corrente->distanza==distanza){
             return 1;
         }
-        //guardiamo nel prossimo HashNode
+        //guardare nel prossimo HashNode
         else{
             corrente=corrente->successivo;
         }
     }
 
-    //NON abbiamo trovato la chiave
+    //stazione NON trovata
     return 0;
 }
 
@@ -644,252 +643,30 @@ int StazioneGiaPresente(struct HashTableAutostrada *htAutostrada, unsigned int d
 
 //COMPARAZIONE
 /**
- * Funzione che compara 2 nodi.
+ * Funzione che compara 2 nodi - comparazione in ordine crescente.
  *
  * @param a primo nodo da comparare.
  * @param b secondo nodo da comparare.
- * @return la comparazioneAvanti.
+ * @return la differenza tra il nodo a e il nodo b.
  */
-int comparazioneAvanti(const void *a, const void *b){
+int comparazioneCrescente(const void *a, const void *b){
     return (int) (((struct ArrayNodeStazione *)a)->distanza-((struct ArrayNodeStazione *)b)->distanza);
 }
 
 /**
- * Funzione che compara 2 nodi.
+ * Funzione che compara 2 nodi - comparazione in ordine decrescente.
  *
  * @param a primo nodo da comparare.
  * @param b secondo nodo da comparare.
- * @return la comparazioneAvanti.
+ * @return la differenza tra il nodo b e il nodo a.
  */
-int comparazioneIndietro(const void *a, const void *b){
+int comparazioneDecrescente(const void *a, const void *b){
     return (int) (((struct ArrayNodeStazione *)b)->distanza-((struct ArrayNodeStazione *)a)->distanza);
 }
 
 
 
 //PIANIFICA PERCORSO
-/**
- * Ritorna un Array contenente tutte le stazioni tra quella di partenza e quella di arrivo - Percorso All'Andata.
- * Dimensione iniziale è arrivo-partenza+1.
- * Dimensione finale è numeroDiStazioni.
- *
- * @param partenza distanza a cui si trova la stazione di partenza.
- * @param arrivo distanza a cui si trova la stazione di arrivo.
- * @param numeroDiStazioni numero di stazioni tra quella di partenza e quella di arrivo.
- * @return un Array che contiene le stazioni tra quella di partenza e quella di arrivo con l'autonomia massima dell'auto nel loro parco auto.
- */
-struct ArrayNodeStazione *tutteLeStazioniInAvanti(unsigned int partenza, unsigned int arrivo, int *numeroDiStazioni){
-    /**
-     * Dimensione iniziale array.
-     */
-    int x=1000;
-    /**
-     * Array di stazioni con la loro autonomia massima.
-     */
-    struct ArrayNodeStazione *stazioniIntermedie=(struct ArrayNodeStazione *) calloc(x, sizeof(struct ArrayNodeStazione));
-    /**
-     * Posizione libera nell'Array stazioniIntermedie.
-     */
-    int posizioneArray=0;
-    /**
-     * Stazione ricercata.
-     */
-    struct HashNodeStazione *ricerca=NULL;
-    /**
-     * Nodo corrente presente nella cella i.
-     */
-    struct HashNodeStazione *corrente;
-
-
-    //controllare solo le stazioni comprese tra partenza e arrivo
-    if(((int) arrivo-partenza) < autostrada->dimensione){
-        //per ogni stazione che ci potrebbe essere tra partenza e arrivo
-        for (unsigned int i = partenza; i <= arrivo; ++i) {
-            //salviamo la stazione cercata
-            ricerca= ricercaStazione(autostrada, i);
-            //se la stazione esiste la aggiungiamo alle stazioniIntermedie[]
-            if(ricerca!=NULL){
-                //se l'Array stazioniIntermedie[] è pieno lo reallochiamo
-                if(posizioneArray==x){
-                    x=x*2;
-                    stazioniIntermedie=(struct ArrayNodeStazione *) realloc(stazioniIntermedie, (x*sizeof(struct ArrayNodeStazione)));
-                }
-                //aggiungiamo la stazione
-                stazioniIntermedie[posizioneArray].distanza= ricerca->distanza;
-                stazioniIntermedie[posizioneArray].autonomiaMassima=ricerca->autonomiaMassima;
-                //aumentiamo la prossima posizione libera
-                posizioneArray++;
-            }
-        }
-    }
-    //controllare tutte le stazioni se sono comprese tra partenza e arrivo
-    else{
-        //per ogni stazione nell'autostrada
-        for (int i = 0; i < autostrada->capacita; ++i) {
-            //nella cella i c'è almeno 1 stazione
-            if(autostrada->stazioni[i]!=NULL){
-                //stazione corrente
-                corrente=autostrada->stazioni[i];
-                while (corrente!=NULL){
-                    if(corrente->distanza>=partenza && corrente->distanza<=arrivo){
-                        //se l'Array stazioniIntermedie[] è pieno lo reallochiamo
-                        if(posizioneArray==x){
-                            x=x*2;
-                            stazioniIntermedie=(struct ArrayNodeStazione *) realloc(stazioniIntermedie, (x*sizeof(struct ArrayNodeStazione)));
-                        }
-                        //aggiungiamo la stazione
-                        stazioniIntermedie[posizioneArray].distanza= corrente->distanza;
-                        stazioniIntermedie[posizioneArray].autonomiaMassima=corrente->autonomiaMassima;
-                        //aumentiamo la prossima posizione libera
-                        posizioneArray++;
-                    }
-                    corrente=corrente->successivo;
-                }
-            }
-        }
-
-        //ordina stazioniIntermedie - partenza --> arrivo
-        qsort(stazioniIntermedie, posizioneArray, sizeof(struct ArrayNodeStazione), comparazioneAvanti);
-    }
-
-    //numero di stazioni tra quella di partenza e quella d'arrivo
-    (*numeroDiStazioni)=posizioneArray;
-    //stazioni intermedie tra quella di partenza e quella di arrivo
-    stazioniIntermedie=(struct ArrayNodeStazione *) realloc(stazioniIntermedie, (*numeroDiStazioni)*sizeof(struct ArrayNodeStazione));
-    return stazioniIntermedie;
-}
-
-/**
- * Ritorna un Array contenente tutte le stazioni tra quella di partenza e quella di arrivo - Percorso Al Ritorno.
- * Dimensione iniziale è arrivo-partenza+1.
- * Dimensione finale è numeroDiStazioni.
- *
- * @param partenza distanza a cui si trova la stazione di partenza.
- * @param arrivo distanza a cui si trova la stazione di arrivo.
- * @param numeroDiStazioni numero di stazioni tra quella di partenza e quella di arrivo.
- * @return un Array che contiene le stazioni tra quella di partenza e quella di arrivo con l'autonomia massima dell'auto nel loro parco auto.
- */
-struct ArrayNodeStazione *tutteLeStazioniAllIndietro(unsigned int partenza, unsigned int arrivo, int *numeroDiStazioni){
-    /**
-     * Dimensione iniziale array.
-     */
-    int x=1000;
-    /**
-     * Array di stazioni con la loro autonomia massima.
-     */
-    struct ArrayNodeStazione *stazioniIntermedie=(struct ArrayNodeStazione *) calloc(x, sizeof(struct ArrayNodeStazione));
-    /**
-     * Posizione libera nell'Array stazioniIntermedie.
-     */
-    int posizioneArray=0;
-    /**
-     * Stazione ricercata.
-     */
-    struct HashNodeStazione *ricerca=NULL;
-    /**
-     * Nodo corrente presente nella cella i.
-     */
-    struct HashNodeStazione *corrente;
-
-
-    //controllare solo le stazioni comprese tra partenza e arrivo
-    if(((int) arrivo-partenza) < autostrada->dimensione){
-        //per ogni stazione che ci potrebbe essere tra partenza e arrivo
-        for (int i = (int) partenza; i >= (int) arrivo; --i) {
-            //salviamo la stazione cercata
-            ricerca = ricercaStazione(autostrada, i);
-            //se la stazione esiste la aggiungiamo alle stazioniIntermedie[]
-            if (ricerca != NULL) {
-                //se l'Array stazioniIntermedie[] è pieno lo reallochiamo
-                if (posizioneArray == x) {
-                    x=x*2;
-                    stazioniIntermedie=(struct ArrayNodeStazione *) realloc(stazioniIntermedie, (x * sizeof(struct ArrayNodeStazione)));
-                }
-                //aggiungiamo la stazione
-                stazioniIntermedie[posizioneArray].distanza = ricerca->distanza;
-                stazioniIntermedie[posizioneArray].autonomiaMassima = ricerca->autonomiaMassima;
-                //aumentiamo la prossima posizione libera
-                posizioneArray++;
-            }
-        }
-    }
-    //controllare tutte le stazioni se sono comprese tra partenza e arrivo
-    else{
-        for (int i = 0; i < autostrada->capacita; ++i) {
-            //nella cella i c'è almeno 1 stazione
-            if(autostrada->stazioni[i]!=NULL){
-                //stazione corrente
-                corrente=autostrada->stazioni[i];
-
-                while (corrente!=NULL){
-                    if(corrente->distanza<=partenza && corrente->distanza>=arrivo){
-                        //se l'Array stazioniIntermedie[] è pieno lo reallochiamo
-                        if(posizioneArray==x){
-                            x=x*2;
-                            stazioniIntermedie=(struct ArrayNodeStazione *) realloc(stazioniIntermedie, (x*sizeof(struct ArrayNodeStazione)));
-                        }
-                        //aggiungiamo la stazione
-                        stazioniIntermedie[posizioneArray].distanza= corrente->distanza;
-                        stazioniIntermedie[posizioneArray].autonomiaMassima=corrente->autonomiaMassima;
-                        //aumentiamo la prossima posizione libera
-                        posizioneArray++;
-                    }
-                    corrente=corrente->successivo;
-                }
-            }
-        }
-
-        //ordinamento stazioniIntermedie - partenza --> arrivo
-        qsort(stazioniIntermedie, posizioneArray, sizeof(struct ArrayNodeStazione), comparazioneIndietro);
-    }
-
-    //numero di stazioni tra quella di partenza e quella d'arrivo
-    (*numeroDiStazioni)=posizioneArray;
-    //stazioni intermedie tra quella di partenza e quella di arrivo
-    stazioniIntermedie=(struct ArrayNodeStazione *) realloc(stazioniIntermedie, ((*numeroDiStazioni)*sizeof(struct ArrayNodeStazione)));
-    return stazioniIntermedie;
-}
-
-/**
- * Ritorna un Array contenente tutte le stazioni tra quella di partenza e quella di arrivo - Sceglie tra percorso all'Andate e al Ritorno.
- *
- * @param partenza distanza a cui si trova la stazione di partenza.
- * @param arrivo distanza a cui si trova la stazione di arrivo.
- * @param numeroDiStazioni numero di stazioni tra quella di partenza e quella di arrivo.
- * @return un Array che contiene le stazioni tra quella di partenza e quella di arrivo con l'autonomia massima dell'auto nel loro parco auto.
- */
-struct ArrayNodeStazione *tutteLeStazioni(unsigned int partenza, unsigned int arrivo, int *numeroDiStazioni){
-    //ritorna le stazioni comprese tra la partenza e l'arrivo
-    if(partenza<arrivo){
-        return tutteLeStazioniInAvanti(partenza, arrivo, numeroDiStazioni);
-    }
-    else{
-        return tutteLeStazioniAllIndietro(partenza, arrivo, numeroDiStazioni);
-    }
-}
-
-
-/**
- * Indice della stazione più lontana data l'autonomia massima della macchina.
- *
- * @param stazioni stazioni da controllare.
- * @param numeroStazioni numero di stazioni da controllare.
- * @param autonomiaMassima autonomia massima dell'auto.
- * @return indice della stazione più lontana.
- */
-int stazionePiuLontana(struct ArrayNodeStazione stazioni[], int numeroStazioni, unsigned int autonomiaMassima){
-    //ricerca per tutte le stazioni
-    for (int i = 1; i < numeroStazioni; ++i) {
-        //se la distanza tra la stazione corrente e quella iniziale è maggiore dell'autonomia massima
-        if(autonomiaMassima<abs((int) stazioni[i].distanza-(int) stazioni[0].distanza)){
-            //ritorna la posizione nell'Array
-            return --i;
-        }
-    }
-    //ritorna la posizione nell'Array - posizione finale
-    return (numeroStazioni-1);
-}
-
 /**
  * Indice della stazione data la distanza - ordine crescente.
  *
@@ -898,7 +675,7 @@ int stazionePiuLontana(struct ArrayNodeStazione stazioni[], int numeroStazioni, 
  * @param distanza distanza da ricercare.
  * @return indice della stazione con distanza ricercata.
  */
-int indiceStazioneInAvanti(struct ArrayNodeStazione stazioni[], int numeroStazioni, unsigned int distanza){
+int indiceStazioneOrdineCrescente(struct ArrayNodeStazione stazioni[], int numeroStazioni, unsigned int distanza){
     /**
      * Indice parte sinistra da controllare.
      */
@@ -918,7 +695,7 @@ int indiceStazioneInAvanti(struct ArrayNodeStazione stazioni[], int numeroStazio
         //indice da controllare
         medio=((int) sx+((int) ((dx-sx)/2)));
 
-        //controllo se il valore è uguale a quello cercato
+        //controllare se il valore è uguale a quello cercato
         if(stazioni[medio].distanza==distanza){
             return medio;
         }
@@ -944,7 +721,7 @@ int indiceStazioneInAvanti(struct ArrayNodeStazione stazioni[], int numeroStazio
  * @param distanza distanza da ricercare.
  * @return indice della stazione con distanza ricercata.
  */
-int indiceStazioneAllIndietro(struct ArrayNodeStazione stazioni[], int numeroStazioni, unsigned int distanza){
+int indiceStazioneOrdineDecrescente(struct ArrayNodeStazione stazioni[], int numeroStazioni, unsigned int distanza){
     /**
      * Indice parte sinistra da controllare.
      */
@@ -964,7 +741,7 @@ int indiceStazioneAllIndietro(struct ArrayNodeStazione stazioni[], int numeroSta
         //indice da controllare
         medio=((int) sx+((int) ((dx-sx)/2)));
 
-        //controllo se il valore è uguale a quello cercato
+        //controllare se il valore è uguale a quello cercato
         if(stazioni[medio].distanza==distanza){
             return medio;
         }
@@ -983,23 +760,241 @@ int indiceStazioneAllIndietro(struct ArrayNodeStazione stazioni[], int numeroSta
 }
 
 /**
- * Pianifica percorso in avanti - partenza < arrivo.
+ * Indice della stazione più lontana data l'autonomia massima della macchina.
  *
- * @param stazioni stazioni tra partenza e arrivo.
- * @param numeroDiStazioni numero di stazioni tra partenza e arrivo.
+ * @param stazioni stazioni da controllare.
+ * @param numeroStazioni numero di stazioni da controllare.
+ * @param autonomiaMassima autonomia massima dell'auto.
+ * @return indice della stazione più lontana.
+ */
+int stazionePiuLontana(struct ArrayNodeStazione stazioni[], int numeroStazioni, unsigned int autonomiaMassima){
+    //ricercare per tutte le stazioni
+    for (int i = 1; i < numeroStazioni; ++i) {
+        //se la distanza tra la stazione corrente e quella iniziale è maggiore dell'autonomia massima
+        if(autonomiaMassima<abs((int) stazioni[i].distanza-(int) stazioni[0].distanza)){
+            //ritornare la posizione nell'Array
+            return --i;
+        }
+    }
+    //ritornare la posizione nell'Array - posizione finale
+    return (numeroStazioni-1);
+}
+
+/**
+ * Ritorna un Array contenente tutte le stazioni tra quella di partenza e quella di arrivo - partenza < arrivo.
+ *
+ * @param partenza distanza a cui si trova la stazione di partenza.
+ * @param arrivo distanza a cui si trova la stazione di arrivo.
+ * @param numeroDiStazioni numero di stazioni tra quella di partenza e quella di arrivo.
+ * @return un Array che contiene tutte le stazioni tra quella di partenza e quella di arrivo con l'autonomia massima dell'auto presente nel loro parco auto.
+ */
+struct ArrayNodeStazione *tutteLeStazioniInAvanti(unsigned int partenza, unsigned int arrivo, int *numeroDiStazioni){
+    /**
+     * Dimensione iniziale array.
+     */
+    int x=1000;
+    /**
+     * Array delle stazioni con la loro autonomia massima.
+     */
+    struct ArrayNodeStazione *stazioniIntermedie=(struct ArrayNodeStazione *) calloc(x, sizeof(struct ArrayNodeStazione));
+    /**
+     * Posizione libera nell'Array stazioniIntermedie.
+     */
+    int posizioneArray=0;
+    /**
+     * Stazione ricercata.
+     */
+    struct HashNodeStazione *ricerca=NULL;
+    /**
+     * Nodo corrente presente nella cella i.
+     */
+    struct HashNodeStazione *corrente;
+
+
+    //controllare solo le stazioni comprese tra partenza e arrivo
+    if(((int) arrivo-partenza) < autostrada->dimensione){
+        //per ogni stazione che ci potrebbe essere tra partenza e arrivo
+        for (unsigned int i = partenza; i <= arrivo; ++i) {
+            //salvare la stazione
+            ricerca= ricercaStazioneNellAutostrada(autostrada, i);
+            //se la stazione esiste la aggiungiamo alle stazioniIntermedie[]
+            if(ricerca!=NULL){
+                //se l'Array è pieno bisogna reallocarlo
+                if(posizioneArray==x){
+                    x=x*2;
+                    stazioniIntermedie=(struct ArrayNodeStazione *) realloc(stazioniIntermedie, (x*sizeof(struct ArrayNodeStazione)));
+                }
+                //aggiungere la stazione
+                stazioniIntermedie[posizioneArray].distanza= ricerca->distanza;
+                stazioniIntermedie[posizioneArray].autonomiaMassima=ricerca->autonomiaMassima;
+                posizioneArray++;
+            }
+        }
+    }
+    //controllare tutte le stazioni presenti nell'autostrada e aggiungere all'array solo quelle comprese tra la partenza e l'arrivo
+    else{
+        //per tutte le stazioni presenti sull'autostrada
+        for (int i = 0; i < autostrada->capacita; ++i) {
+            //nella cella i c'è almeno 1 stazione
+            if(autostrada->stazioni[i]!=NULL){
+                //stazione corrente
+                corrente=autostrada->stazioni[i];
+                while (corrente!=NULL){
+                    if(corrente->distanza>=partenza && corrente->distanza<=arrivo){
+                        //se l'Array è pieno bisogna reallocarlo
+                        if(posizioneArray==x){
+                            x=x*2;
+                            stazioniIntermedie=(struct ArrayNodeStazione *) realloc(stazioniIntermedie, (x*sizeof(struct ArrayNodeStazione)));
+                        }
+                        //aggiungere la stazione
+                        stazioniIntermedie[posizioneArray].distanza= corrente->distanza;
+                        stazioniIntermedie[posizioneArray].autonomiaMassima=corrente->autonomiaMassima;
+                        posizioneArray++;
+                    }
+                    corrente=corrente->successivo;
+                }
+            }
+        }
+
+        //ordinare l'array stazioniIntermedie - partenza --> arrivo
+        qsort(stazioniIntermedie, posizioneArray, sizeof(struct ArrayNodeStazione), comparazioneCrescente);
+    }
+
+    //numero di stazioni tra quella di partenza e quella d'arrivo
+    (*numeroDiStazioni)=posizioneArray;
+    //stazioni intermedie tra quella di partenza e quella di arrivo
+    stazioniIntermedie=(struct ArrayNodeStazione *) realloc(stazioniIntermedie, (*numeroDiStazioni)*sizeof(struct ArrayNodeStazione));
+    return stazioniIntermedie;
+}
+
+/**
+ * Ritorna un Array contenente tutte le stazioni tra quella di partenza e quella di arrivo - partenza > arrivo.
+ *
+ * @param partenza distanza a cui si trova la stazione di partenza.
+ * @param arrivo distanza a cui si trova la stazione di arrivo.
+ * @param numeroDiStazioni numero di stazioni tra quella di partenza e quella di arrivo.
+ * @return un Array che contiene tutte le stazioni tra quella di partenza e quella di arrivo con l'autonomia massima dell'auto presente nel loro parco auto.
+ */
+struct ArrayNodeStazione *tutteLeStazioniAllIndietro(unsigned int partenza, unsigned int arrivo, int *numeroDiStazioni){
+    /**
+     * Dimensione iniziale array.
+     */
+    int x=1000;
+    /**
+     * Array delle stazioni con la loro autonomia massima.
+     */
+    struct ArrayNodeStazione *stazioniIntermedie=(struct ArrayNodeStazione *) calloc(x, sizeof(struct ArrayNodeStazione));
+    /**
+     * Posizione libera nell'Array stazioniIntermedie.
+     */
+    int posizioneArray=0;
+    /**
+     * Stazione ricercata.
+     */
+    struct HashNodeStazione *ricerca=NULL;
+    /**
+     * Nodo corrente presente nella cella i.
+     */
+    struct HashNodeStazione *corrente;
+
+
+    //controllare solo le stazioni comprese tra partenza e arrivo
+    if(((int) arrivo-partenza) < autostrada->dimensione){
+        //per ogni stazione che ci potrebbe essere tra partenza e arrivo
+        for (int i = (int) partenza; i >= (int) arrivo; --i) {
+            //ricercare la stazione
+            ricerca = ricercaStazioneNellAutostrada(autostrada, i);
+            //se la stazione esiste aggiungerla all'array
+            if (ricerca != NULL) {
+                //se l'Array è pieno bisogna reallocarlo
+                if (posizioneArray == x) {
+                    x=x*2;
+                    stazioniIntermedie=(struct ArrayNodeStazione *) realloc(stazioniIntermedie, (x * sizeof(struct ArrayNodeStazione)));
+                }
+                //aggiungere la stazione
+                stazioniIntermedie[posizioneArray].distanza = ricerca->distanza;
+                stazioniIntermedie[posizioneArray].autonomiaMassima = ricerca->autonomiaMassima;
+                posizioneArray++;
+            }
+        }
+    }
+    //controllare tutte le stazioni presenti nell'autostrada e aggiungere all'array solo quelle comprese tra la partenza e l'arrivo
+    else{
+        //per tutte le stazioni presenti sull'autostrada
+        for (int i = 0; i < autostrada->capacita; ++i) {
+            //se nella cella i c'è almeno 1 stazione
+            if(autostrada->stazioni[i]!=NULL){
+                //stazione corrente
+                corrente=autostrada->stazioni[i];
+
+                while (corrente!=NULL){
+                    if(corrente->distanza<=partenza && corrente->distanza>=arrivo){
+                        //se l'Array è pieno bisogna reallocarlo
+                        if(posizioneArray==x){
+                            x=x*2;
+                            stazioniIntermedie=(struct ArrayNodeStazione *) realloc(stazioniIntermedie, (x*sizeof(struct ArrayNodeStazione)));
+                        }
+                        //aggiungere la stazione
+                        stazioniIntermedie[posizioneArray].distanza= corrente->distanza;
+                        stazioniIntermedie[posizioneArray].autonomiaMassima=corrente->autonomiaMassima;
+                        posizioneArray++;
+                    }
+                    corrente=corrente->successivo;
+                }
+            }
+        }
+
+        //ordinare l'array stazioniIntermedie - partenza --> arrivo
+        qsort(stazioniIntermedie, posizioneArray, sizeof(struct ArrayNodeStazione), comparazioneDecrescente);
+    }
+
+    //numero di stazioni tra quella di partenza e quella d'arrivo
+    (*numeroDiStazioni)=posizioneArray;
+    //stazioni intermedie tra quella di partenza e quella di arrivo
+    stazioniIntermedie=(struct ArrayNodeStazione *) realloc(stazioniIntermedie, ((*numeroDiStazioni)*sizeof(struct ArrayNodeStazione)));
+    return stazioniIntermedie;
+}
+
+/**
+ * Ritorna un Array contenente tutte le stazioni tra quella di partenza e quella di arrivo.
+ *
+ * @param partenza distanza a cui si trova la stazione di partenza.
+ * @param arrivo distanza a cui si trova la stazione di arrivo.
+ * @param numeroDiStazioni numero di stazioni tra quella di partenza e quella di arrivo.
+ * @return un Array che contiene tutte le stazioni tra quella di partenza e quella di arrivo con l'autonomia massima dell'auto presente nel loro parco auto.
+ */
+struct ArrayNodeStazione *tutteLeStazioni(unsigned int partenza, unsigned int arrivo, int *numeroDiStazioni){
+    //ritornare le stazioni comprese tra la partenza e l'arrivo
+    if(partenza<arrivo){
+        return tutteLeStazioniInAvanti(partenza, arrivo, numeroDiStazioni);
+    }
+    else{
+        return tutteLeStazioniAllIndietro(partenza, arrivo, numeroDiStazioni);
+    }
+}
+
+/**
+ * Pianifica il percorso ottimale in avanti - partenza < arrivo.
+ *
+ * @param stazioni stazioni tra quella di partenza e quella di arrivo.
+ * @param numeroDiStazioni numero di stazioni tra quella di partenza e quella di arrivo.
  * @param partenza stazione di partenza.
  * @param arrivo stazione di arrivo.
  * @return percorso tra la stazione di partenza e quella di arrivo, NULL se NON esiste.
  */
 int *percorsoPianificatoInAvanti(struct ArrayNodeStazione stazioni[], int numeroDiStazioni, int partenza, int arrivo){
     /**
-     * Percorso da ritornare.
+     * Percorso ottimale da ritornare.
      */
     int *percorsoTrovato=(int *) calloc(numeroDiStazioni, sizeof(int));
     /**
-     * Indice della posizione dell'array percorsoTrovato.
+     * Indice dell'array percorsoTrovato.
      */
     int indicePercorsoTrovato=0;
+    /**
+     * Nuova dimensione del percorso da ritornare - per realloc.
+     */
+    int nuovaDimensionePercorsoTrovato;
     /**
      * Indice stazione corrente.
      */
@@ -1013,20 +1008,16 @@ int *percorsoPianificatoInAvanti(struct ArrayNodeStazione stazioni[], int numero
      */
     int indiceStazioneDaSuperare;
     /**
-     * Nuova dimensione del percorso da ritornare - per realloc.
-     */
-    int nuovaDimensionePercorso;
-    /**
-     * Indice più vicino alla partenza - serve nel momento di scelta delle stazioni con distanza minore.
+     * Indice più vicino alla partenza - serve nel momento in cui bisogna scegliere le stazioni con distanza minore.
      */
     int a;
     /**
-     * Indice più vicino all'arrivo - serve nel momento di scelta delle stazioni con distanza minore.
+     * Indice più vicino all'arrivo - serve nel momento in cui bisogna scegliere le stazioni con distanza minore.
      */
     int b;
 
 
-    //aggiunta della partenza al percorso da ricercare
+    //aggiungere la stazione di partenza al percorso ottimale da ritornare
     percorsoTrovato[indicePercorsoTrovato]=partenza;
     ++indicePercorsoTrovato;
 
@@ -1039,7 +1030,7 @@ int *percorsoPianificatoInAvanti(struct ArrayNodeStazione stazioni[], int numero
     //fino a che NON siamo arrivati alla stazione di arrivo
     while (stazioni[indiceStazionePiuLontana].distanza!=arrivo){
         indiceStazioneDaSuperare=indiceStazionePiuLontana+ stazionePiuLontana((stazioni+indiceStazionePiuLontana), (numeroDiStazioni-indiceStazionePiuLontana), stazioni[indiceStazionePiuLontana].autonomiaMassima);
-        //ricerca migliore stazione fino a questo momento
+        //ricercare la migliore stazione fino a questo momento
         for (int i = indiceStazionePiuLontana-1; i > indiceCorrente; --i) {
             if(stazioni[i].autonomiaMassima>=(stazioni[indiceStazioneDaSuperare].distanza-stazioni[i].distanza)){
                 indiceStazionePiuLontana=i;
@@ -1047,15 +1038,15 @@ int *percorsoPianificatoInAvanti(struct ArrayNodeStazione stazioni[], int numero
             }
         }
 
-        //aggiunta ultima stazione - stazione più lontana
+        //aggiungere la stazione più lontana al percorso ottimale da ritornare
         if(indicePercorsoTrovato==numeroDiStazioni){
-            nuovaDimensionePercorso=indicePercorsoTrovato*2;
-            percorsoTrovato=(int *) realloc(percorsoTrovato, nuovaDimensionePercorso* sizeof(int));
+            nuovaDimensionePercorsoTrovato= indicePercorsoTrovato * 2;
+            percorsoTrovato=(int *) realloc(percorsoTrovato, nuovaDimensionePercorsoTrovato * sizeof(int));
         }
         percorsoTrovato[indicePercorsoTrovato]=(int) stazioni[indiceStazionePiuLontana].distanza;
         ++indicePercorsoTrovato;
 
-        //la stazione più lontana è quella massima ==> percorso NON trovato
+        //se la stazione più lontana è quella massima ==> percorso NON trovato
         if (indiceStazionePiuLontana==indiceStazioneDaSuperare){
             //percorso NON trovato
             free(percorsoTrovato);
@@ -1066,12 +1057,12 @@ int *percorsoPianificatoInAvanti(struct ArrayNodeStazione stazioni[], int numero
         indiceStazionePiuLontana=indiceStazioneDaSuperare;
     }
 
-    //possiamo arrivare alla stazione di arrivo
-    if (stazioni[indiceStazioneInAvanti(stazioni, numeroDiStazioni, percorsoTrovato[indicePercorsoTrovato - 1])].autonomiaMassima >= (arrivo - percorsoTrovato[indicePercorsoTrovato - 1])){
-        //aggiunta stazione di arrivo
+    //se è possibile arrivare alla stazione di arrivo
+    if (stazioni[indiceStazioneOrdineCrescente(stazioni, numeroDiStazioni, percorsoTrovato[indicePercorsoTrovato - 1])].autonomiaMassima >= (arrivo - percorsoTrovato[indicePercorsoTrovato - 1])){
+        //aggiungere la stazione di arrivo al percorso ottimale da ritornare
         if(indicePercorsoTrovato==numeroDiStazioni){
-            nuovaDimensionePercorso=indicePercorsoTrovato*2;
-            percorsoTrovato=(int *) realloc(percorsoTrovato, nuovaDimensionePercorso* sizeof(int));
+            nuovaDimensionePercorsoTrovato= indicePercorsoTrovato * 2;
+            percorsoTrovato=(int *) realloc(percorsoTrovato, nuovaDimensionePercorsoTrovato * sizeof(int));
         }
         percorsoTrovato[indicePercorsoTrovato]=arrivo;
     }
@@ -1081,15 +1072,15 @@ int *percorsoPianificatoInAvanti(struct ArrayNodeStazione stazioni[], int numero
         return NULL;
     }
 
-    //controllo per stazioni iniziali più vicine all'origine
+    //scegliere le stazioni più vicine all'origine
     while(indicePercorsoTrovato>1){
-        //A - stazione da controllare - B
+        //A -- stazione da controllare -- B
         //limite inferiore per il controllo delle stazioni più vicine all'origine
-        a= indiceStazioneInAvanti(stazioni, numeroDiStazioni, percorsoTrovato[indicePercorsoTrovato-2]);
+        a= indiceStazioneOrdineCrescente(stazioni, numeroDiStazioni, percorsoTrovato[indicePercorsoTrovato - 2]);
         //limite superiore per il controllo delle stazioni più vicine all'origine
-        b= indiceStazioneInAvanti(stazioni, numeroDiStazioni, percorsoTrovato[indicePercorsoTrovato]);
+        b= indiceStazioneOrdineCrescente(stazioni, numeroDiStazioni, percorsoTrovato[indicePercorsoTrovato]);
 
-        //controllare tutte le stazioni dal punto B al punto A - ricerca se tra i 2 punti c'è una stazioni più piccola
+        //controllare tutte le stazioni dal punto B al punto A - ricercare se tra i 2 punti esiste una stazioni più piccola
         for (int i = b-1; i > a; --i) {
             //A.autonomia >= medio.distanza - A.distanza
             //medio.autonomia >= B.distanza - medio.distanza
@@ -1106,25 +1097,29 @@ int *percorsoPianificatoInAvanti(struct ArrayNodeStazione stazioni[], int numero
 }
 
 /**
- * Pianifica percorso all'indietro - partenza > arrivo.
+ * Pianifica il percorso ottimale all'indietro - partenza > arrivo.
  *
- * @param stazioni stazioni tra partenza e arrivo.
- * @param numeroDiStazioni numero di stazioni tra partenza e arrivo.
+ * @param stazioni stazioni tra quella di partenza e quella di arrivo.
+ * @param numeroDiStazioni numero di stazioni tra quella di partenza e quella di arrivo.
  * @param partenza stazione di partenza.
  * @param arrivo stazione di arrivo.
  * @return percorso tra la stazione di partenza e quella di arrivo, NULL se NON esiste.
  */
 int *percorsoPianificatoAllIndietro(struct ArrayNodeStazione stazioni[], int numeroDiStazioni, int partenza, int arrivo){
     /**
-     * Percorso da ritornare.
+     * Percorso ottimale da ritornare.
      */
     int *percorsoTrovato=(int *) calloc(numeroDiStazioni, sizeof(int));
     /**
-     * Indice della posizione dell'array percorsoTrovato.
+     * Indice dell'array percorsoTrovato.
      */
     int indicePercorsoTrovato=0;
     /**
-     * Indice stazione corrente.
+     * Nuova dimensione del percorso da ritornare - per realloc.
+     */
+    int nuovaDimensionePercorsoTrovato;
+    /**
+     * Indice della stazione corrente.
      */
     int indiceCorrente=0;
     /**
@@ -1136,20 +1131,16 @@ int *percorsoPianificatoAllIndietro(struct ArrayNodeStazione stazioni[], int num
      */
     int indiceStazioneDaSuperare;
     /**
-     * Nuova dimensione del percorso da ritornare - per realloc.
-     */
-    int nuovaDimensionePercorso;
-    /**
-     * Indice più vicino alla partenza - serve nel momento di scelta delle stazioni con distanza minore.
+     * Indice più vicino alla partenza - serve nel momento in cui bisogna scegliere le stazioni con distanza minore.
      */
     int a;
     /**
-     * Indice più vicino all'arrivo - serve nel momento di scelta delle stazioni con distanza minore.
+     * Indice più vicino all'arrivo - serve nel momento in cui bisogna scegliere le stazioni con distanza minore.
      */
     int b;
 
 
-    //aggiunta della partenza al percorso da ricercare
+    //aggiungere la stazione di partenza al percorso ottimale da ritornare
     percorsoTrovato[indicePercorsoTrovato]=partenza;
     ++indicePercorsoTrovato;
 
@@ -1162,7 +1153,7 @@ int *percorsoPianificatoAllIndietro(struct ArrayNodeStazione stazioni[], int num
     //fino a che NON siamo arrivati alla stazione di arrivo
     while (stazioni[indiceStazionePiuLontana].distanza!=arrivo){
         indiceStazioneDaSuperare=indiceStazionePiuLontana+ stazionePiuLontana((stazioni+indiceStazionePiuLontana), (numeroDiStazioni-indiceStazionePiuLontana), stazioni[indiceStazionePiuLontana].autonomiaMassima);
-        //ricerca migliore stazione fino a questo momento
+        //ricercare la migliore stazione fino a questo momento
         for (int i = indiceStazionePiuLontana-1; i > indiceCorrente; --i) {
             if(stazioni[i].autonomiaMassima>=abs((int) stazioni[indiceStazioneDaSuperare].distanza-(int) stazioni[i].distanza)){
                 indiceStazionePiuLontana=i;
@@ -1170,15 +1161,15 @@ int *percorsoPianificatoAllIndietro(struct ArrayNodeStazione stazioni[], int num
             }
         }
 
-        //aggiunta ultima stazione - stazione più lontana
+        //aggiungere la stazione più lontana al percorso ottimale da ritornare
         if(indicePercorsoTrovato==numeroDiStazioni){
-            nuovaDimensionePercorso=indicePercorsoTrovato*2;
-            percorsoTrovato=(int *) realloc(percorsoTrovato, nuovaDimensionePercorso* sizeof(int));
+            nuovaDimensionePercorsoTrovato= indicePercorsoTrovato * 2;
+            percorsoTrovato=(int *) realloc(percorsoTrovato, nuovaDimensionePercorsoTrovato * sizeof(int));
         }
         percorsoTrovato[indicePercorsoTrovato]=(int) stazioni[indiceStazionePiuLontana].distanza;
         ++indicePercorsoTrovato;
 
-        //la stazione più lontana è quella massima ==> percorso NON trovato
+        //se la stazione più lontana è quella massima ==> percorso NON trovato
         if (indiceStazionePiuLontana==indiceStazioneDaSuperare){
             //percorso NON trovato
             free(percorsoTrovato);
@@ -1189,29 +1180,31 @@ int *percorsoPianificatoAllIndietro(struct ArrayNodeStazione stazioni[], int num
         indiceStazionePiuLontana=indiceStazioneDaSuperare;
     }
 
-    //possiamo arrivare alla stazione di arrivo
-    if (stazioni[indiceStazioneAllIndietro(stazioni, numeroDiStazioni, percorsoTrovato[indicePercorsoTrovato - 1])].autonomiaMassima >= abs(arrivo - percorsoTrovato[indicePercorsoTrovato - 1])){
-        //aggiunta stazione di arrivo
+    //se è possibile arrivare alla stazione di arrivo
+    if (stazioni[indiceStazioneOrdineDecrescente(stazioni, numeroDiStazioni, percorsoTrovato[indicePercorsoTrovato - 1])].autonomiaMassima >= abs(arrivo - percorsoTrovato[indicePercorsoTrovato - 1])){
+        //aggiungere la stazione di arrivo al percorso ottimale da ritornare
         if(indicePercorsoTrovato==numeroDiStazioni){
-            nuovaDimensionePercorso=indicePercorsoTrovato*2;
-            percorsoTrovato=(int *) realloc(percorsoTrovato, nuovaDimensionePercorso* sizeof(int));
+            nuovaDimensionePercorsoTrovato= indicePercorsoTrovato * 2;
+            percorsoTrovato=(int *) realloc(percorsoTrovato, nuovaDimensionePercorsoTrovato * sizeof(int));
         }
         percorsoTrovato[indicePercorsoTrovato]=arrivo;
     }
+    //se NON è possibile arrivare alla stazione di arrivo
     else{
+        //percorso NON trovato
         free(percorsoTrovato);
         return NULL;
     }
 
-    //controllo per stazioni finali più vicine all'origine
+    //scegliere le stazioni più vicine all'origine
     while(indicePercorsoTrovato>1){
-        //A - stazione da controllare - B
+        //A -- stazione da controllare -- B
         //limite inferiore per il controllo delle stazioni più vicine all'origine
-        a= indiceStazioneAllIndietro(stazioni, numeroDiStazioni, percorsoTrovato[indicePercorsoTrovato-2]);
+        a= indiceStazioneOrdineDecrescente(stazioni, numeroDiStazioni, percorsoTrovato[indicePercorsoTrovato - 2]);
         //limite superiore per il controllo delle stazioni più vicine all'origine
-        b= indiceStazioneAllIndietro(stazioni, numeroDiStazioni, percorsoTrovato[indicePercorsoTrovato]);
+        b= indiceStazioneOrdineDecrescente(stazioni, numeroDiStazioni, percorsoTrovato[indicePercorsoTrovato]);
 
-        //controllare tutte le stazioni dal punto B al punto A - ricerca se tra i 2 punti c'è una stazioni più piccola
+        //controllare tutte le stazioni dal punto B al punto A - ricercare se tra i 2 punti esiste una stazioni più piccola
         for (int i = a+1; i < b; ++i) {
             //A.autonomia >= medio.distanza - A.distanza
             //medio.autonomia >= B.distanza - medio.distanza
@@ -1228,27 +1221,27 @@ int *percorsoPianificatoAllIndietro(struct ArrayNodeStazione stazioni[], int num
 }
 
 /**
- * Pianifica percorso.
+ * Pianifica il percorso ottimale per andare dalla stazione di partenza fino a quella di arrivo.
  *
- * @param stazioni stazioni tra partenza e arrivo.
- * @param numeroDiStazioni numero di stazioni tra partenza e arrivo.
+ * @param stazioni stazioni tra quella di partenza e quella di arrivo.
+ * @param numeroDiStazioni numero di stazioni tra quella di partenza e quella di arrivo.
  * @param partenza stazione di partenza.
  * @param arrivo stazione di arrivo.
  * @return percorso tra la stazione di partenza e quella di arrivo, NULL se NON esiste.
  */
 int *percorsoPianificato(struct ArrayNodeStazione stazioni[], int numeroDiStazioni, int partenza, int arrivo){
-    //calcolare il percorso all'andata
+    //calcolare il percorso ottimale per l'andata
     if(partenza<arrivo){
         return percorsoPianificatoInAvanti(stazioni, numeroDiStazioni, partenza, arrivo);
     }
-    //calcolare il percorso al ritorno
+    //calcolare il percorso ottimale per il ritorno
     else{
         return percorsoPianificatoAllIndietro(stazioni, numeroDiStazioni, partenza, arrivo);
     }
 }
 
 /**
- * Stampa il percorso trovato.
+ * Stampa il percorso ottimale trovato.
  *
  * @param percorso percorso da stampare.
  * @param arrivo stazione di arrivo.
@@ -1258,7 +1251,7 @@ void stampaPercorsoPianificato(const int *percorso, int arrivo){
     if (percorso==NULL){
         printf("nessun percorso\n");
     }
-    //se esiste un percorso stampalo
+    //se esiste un percorso
     else{
         int i=0;
         do {
@@ -1274,9 +1267,9 @@ void stampaPercorsoPianificato(const int *percorso, int arrivo){
 
 //GESTIONE COMANDI
 /**
- * Aggiungi stazione all'autostrada.
+ * Aggiungi la stazione all'autostrada.
  */
-void AggiungiStazione(){
+void aggiungiStazione(){
     /**
      * Distanza dall'origine della stazione.
      */
@@ -1298,19 +1291,19 @@ void AggiungiStazione(){
      */
     unsigned int maxAutonomia=0;
     /**
-     * Serve per far ritornare la scanf, se no NON compila.
+     * Serve per leggere il valore di ritorno della scanf, se no NON compila.
      */
     int returnScanf;
 
 
-    //lettura distanza della stazione da aggiungere
+    //lettura dell distanza della stazione da aggiungere
     returnScanf=scanf("%d", &distanza);
     if(returnScanf==EOF){
         return;
     }
 
     //stazione già presente
-    if(StazioneGiaPresente(autostrada, distanza)==1){
+    if(stazioneGiaPresenteNellAutostrada(autostrada, distanza) == 1){
         //la stazione NON è stata aggiunta
         printf("non aggiunta\n");
 
@@ -1321,34 +1314,34 @@ void AggiungiStazione(){
     }
     //stazione NON presente
     else{
-        //leggi numero di macchine che bisogna aggiungere alla stazione
+        //leggere il numero di auto che bisogna aggiungere alla stazione
         returnScanf=scanf("%d", &numeroAuto);
         if(returnScanf==EOF){
             return;
         }
 
-        //crea il parco auto
+        //creare il parco auto
         parcoAuto= creaParcoAuto(DIMENSIONE_INIZIALE_PARCO_AUTO);
 
-        //aggiungi auto con la loro chiave al parco auto
+        //aggiungere le auto con la loro autonomia al parco auto
         for (int i = 0; i < numeroAuto; ++i) {
-            //leggi chiave auto da aggiungere al parco auto
+            //leggere l'autonomia delle auto da aggiungere al parco auto
             returnScanf=scanf("%d", &autonomiaAuto);
             if(returnScanf==EOF){
                 return;
             }
 
-            //salviamo il valore massimo di autonomia
+            //salvare il valore massimo di autonomia
             if(autonomiaAuto>maxAutonomia){
                 maxAutonomia=autonomiaAuto;
             }
 
-            //aggiungi autonomiaAuto al parco auto sopra creato
-            aggiungiAuto(parcoAuto, autonomiaAuto);
+            //aggiungere l'auto al parco auto sopra creato
+            aggiungiAutoAlParcoAuto(parcoAuto, autonomiaAuto);
         }
 
-        //aggiunta la stazione
-        aggiungiStazione(autostrada, distanza, parcoAuto, maxAutonomia);
+        //aggiungere la stazione all'autostrada
+        aggiungiStazioneAllAutostrada(autostrada, distanza, parcoAuto, maxAutonomia);
 
         //la stazione è stata aggiunta
         printf("aggiunta\n");
@@ -1356,19 +1349,19 @@ void AggiungiStazione(){
 }
 
 /**
- * Aggiungi auto alla stazione indicata.
+ * Aggiungi l'auto alla stazione indicata.
  */
-void AggiungiAuto(){
+void aggiungiAuto(){
     /**
-    * Distanza della stazione dall'origine
+    * Distanza della stazione dall'origine.
     */
     unsigned int distanzaStazione=0;
     /**
-     * Autonomia dell'auto da aggiungere alla stazione
+     * Autonomia dell'auto da aggiungere alla stazione.
      */
     unsigned int autonomiaAutoDaAggiungere=0;
     /**
-     * Serve per far ritornare la scanf, se no NON compila.
+     * Serve per leggere il valore di ritorno della scanf, se no NON compila.
      */
     int returnScanf;
     /**
@@ -1377,14 +1370,14 @@ void AggiungiAuto(){
     struct HashNodeStazione *stazione;
 
 
-    //lettura distanzaStazione della stazione a cui aggiungere una macchina
+    //lettura della distanza dove si trova la stazione a cui bisogna aggiungere una macchina
     returnScanf=scanf("%d", &distanzaStazione);
     if(returnScanf==EOF){
         return;
     }
 
     //stazione NON presente
-    if(StazioneGiaPresente(autostrada, distanzaStazione)==0){
+    if(stazioneGiaPresenteNellAutostrada(autostrada, distanzaStazione) == 0){
         //auto NON aggiunta
         printf("non aggiunta\n");
 
@@ -1395,21 +1388,21 @@ void AggiungiAuto(){
     }
     //stazione presente
     else{
-        stazione= ricercaStazione(autostrada, distanzaStazione);
+        stazione= ricercaStazioneNellAutostrada(autostrada, distanzaStazione);
 
-        //leggi chiave auto da aggiungere
+        //leggere l'autonomia dell'auto da aggiungere
         returnScanf=scanf("%d", &autonomiaAutoDaAggiungere);
         if(returnScanf==EOF){
             return;
         }
 
-        //distanza massima percorribile da quella stazione
+        //salvare l'autonomia massima che si può percorrere dalla stazione
         if(autonomiaAutoDaAggiungere>stazione->autonomiaMassima){
             stazione->autonomiaMassima=autonomiaAutoDaAggiungere;
         }
 
-        //aggiungi auto al praco auto della stazione
-        aggiungiAuto(stazione->parcoAuto, autonomiaAutoDaAggiungere);
+        //aggiungere l'auto al parco auto della stazione
+        aggiungiAutoAlParcoAuto(stazione->parcoAuto, autonomiaAutoDaAggiungere);
 
         //auto aggiunta la parco auto
         printf("aggiunta\n");
@@ -1417,34 +1410,34 @@ void AggiungiAuto(){
 }
 
 /**
- * Demolisci stazione dall'autostrada.
+ * Demolisci la stazione dall'autostrada.
  */
-void DemolisciStazione(){
+void demolisciStazione(){
     /**
-    * Distanza dall'origine della stazione
+    * Distanza dall'origine della stazione.
     */
     unsigned int distanza=0;
     /**
-     * Serve per far ritornare la scanf, se no NON compila.
+     * Serve per leggere il valore di ritorno della scanf, se no NON compila.
      */
     int returnScanf;
 
 
-    //lettura distanza della stazione da demolire
+    //lettura della distanza della stazione da demolire
     returnScanf=scanf("%d", &distanza);
     if(returnScanf==EOF){
         return;
     }
 
-    //Se stazione NON presente
-    if(StazioneGiaPresente(autostrada, distanza)==0){
+    //se la stazione NON è presente
+    if(stazioneGiaPresenteNellAutostrada(autostrada, distanza) == 0){
         //stazione NON demolita
         printf("non demolita\n");
     }
-    //stazione presente
+    //se la stazione è presente
     else{
-        //demolisci stazione
-        eliminaStazione(autostrada, distanza);
+        //demolire stazione
+        eliminaStazioneDallAutostrada(autostrada, distanza);
 
         //stazione demolita
         printf("demolita\n");
@@ -1452,19 +1445,19 @@ void DemolisciStazione(){
 }
 
 /**
- * Rottama auto alla stazione indicata.
+ * Rottama l'auto alla stazione indicata.
  */
-void RottamaAuto(){
+void rottamaAuto(){
     /**
-    * Distanza della stazione dall'origine
+    * Distanza della stazione dall'origine.
     */
     unsigned int distanzaStazione=0;
     /**
-     * Autonomia dell'auto da rottamare dalla stazione
+     * Autonomia dell'auto da rottamare.
      */
     unsigned int autonomiaAutoDaRottamare=0;
     /**
-     * Serve per far ritornare la scanf, se no NON compila.
+     * Serve per leggere il valore di ritorno della scanf, se no NON compila.
      */
     int returnScanf;
     /**
@@ -1473,44 +1466,46 @@ void RottamaAuto(){
     struct HashNodeStazione *stazione;
 
 
-    //lettura distanzaStazione della stazione da cui rottamare una macchina
+    //lettura della distanza a cui si trova la stazione da cui bisogna rottamare una macchina
     returnScanf=scanf("%d", &distanzaStazione);
     if(returnScanf==EOF){
         return;
     }
 
     //Se stazione NON presente
-    if(StazioneGiaPresente(autostrada, distanzaStazione)==0){
+    if(stazioneGiaPresenteNellAutostrada(autostrada, distanzaStazione) == 0){
         //auto NON rottamata
         printf("non rottamata\n");
 
-        //devo comunque leggere le auto inserite in input altrimenti restano nel buffer
+        //bisogna comunque leggere le auto inserite in input altrimenti restano nel buffer
         do {
             returnScanf= getc_unlocked(stdin);
         } while (returnScanf!='\n');
     }
     //stazione presente
     else{
-        stazione= ricercaStazione(autostrada, distanzaStazione);
+        //ricercare la stazione di interesse
+        stazione= ricercaStazioneNellAutostrada(autostrada, distanzaStazione);
 
-        //leggi chiave auto da rottamare
+        //leggere l'autonomia dell'auto da rottamare
         returnScanf=scanf("%d", &autonomiaAutoDaRottamare);
         if(returnScanf==EOF){
             return;
         }
 
-        //Se auto NON presente nel parco auto della stazione
-        if(ricercaAuto(stazione->parcoAuto, autonomiaAutoDaRottamare)==0){
+        //Se l'auto NON è presente nel parco auto della stazione
+        if(ricercaAutoNelParcoAuto(stazione->parcoAuto, autonomiaAutoDaRottamare) == 0){
             //auto NON rottamata
             printf("non rottamata\n");
         }
-        //auto presente nel parco auto della stazione
+        //se l'auto è presente nel parco auto della stazione
         else{
-            //eliminiamo l'auto dal parco auto della stazione
-            eliminaAuto(stazione->parcoAuto, autonomiaAutoDaRottamare);
+            //eliminare l'auto dal parco auto della stazione
+            eliminaAutoDalParcoAuto(stazione->parcoAuto, autonomiaAutoDaRottamare);
 
-            //salviamo la nuova autonomia massima
-            stazione->autonomiaMassima= ricercaMassimaAutonomia(stazione->parcoAuto, stazione->parcoAuto->capacita);
+            //salvare la nuova autonomia massima
+            stazione->autonomiaMassima= ricercaMassimaAutonomiaNelParcoAuto(stazione->parcoAuto,
+                                                                            stazione->parcoAuto->capacita);
 
             //auto rottamata
             printf("rottamata\n");
@@ -1519,31 +1514,31 @@ void RottamaAuto(){
 }
 
 /**
- * Gestione comando di pianifica percorso dalla stazione di partenza a quella di arrivo.
+ * Gestione del comando di pianifica percorso dalla stazione di partenza a quella di arrivo.
  */
-void PianificaPercorso(){
+void pianificaPercorso(){
     /**
-     * Distanza dall'origine della stazione di partenza
+     * Distanza dall'origine della stazione di partenza.
      */
     int distanzaStazionePartenza=0;
     /**
-     * Distanza dall'origine della stazione di arrivo
+     * Distanza dall'origine della stazione di arrivo.
      */
     int distanzaStazioneArrivo=0;
     /**
-     * Serve per far ritornare la scanf, se no NON compila.
+     * Serve per leggere il valore di ritorno della scanf, se no NON compila.
      */
     int returnScanf;
     /**
-     * Numero di stazioni esistenti dalla partenza all'arrivo.
+     * Numero di stazioni presenti tra quella di partenza e quella di arrivo.
      */
     int numeroDiStazioni=0;
     /**
-     * Tutte le stazioni comprese tra la partenza e l'arrivo.
+     * Stazioni comprese tra la partenza e l'arrivo.
      */
     struct ArrayNodeStazione *stazioniIntermedie;
     /**
-     * Percorso tra la stazione di partenza e quella di arrivo ottimale.
+     * Percorso ottimale tra la stazione di partenza e quella di arrivo.
      */
     int *percorsoTrovato;
 
@@ -1558,19 +1553,19 @@ void PianificaPercorso(){
         return;
     }
 
-    //stazione di partenza NON ha macchine
-    if(ricercaStazione(autostrada, distanzaStazionePartenza)->autonomiaMassima==0){
+    //se stazione di partenza NON ha macchine
+    if(ricercaStazioneNellAutostrada(autostrada, distanzaStazionePartenza)->autonomiaMassima == 0){
         printf("nessun percorso\n");
     }
-    //se stazione partenza == stazione arrivo
+    //se la stazione di partenza è anche quella di arrivo
     else if(distanzaStazionePartenza==distanzaStazioneArrivo){
         printf("%d\n", distanzaStazionePartenza);
     }
-    //ricerca il percorso ottimale per andare dalla partenza all'arrivo
+    //ricercare il percorso ottimale per andare dalla partenza all'arrivo
     else{
         //selezionare tutte le stazioni tra quella di partenza e quella di arrivo
         stazioniIntermedie= tutteLeStazioni(distanzaStazionePartenza, distanzaStazioneArrivo, &numeroDiStazioni);
-        //percorso ricercato
+        //ricercare il percorso ottimale per andare dalla partenza all'arrivo
         percorsoTrovato= percorsoPianificato(stazioniIntermedie, numeroDiStazioni, distanzaStazionePartenza, distanzaStazioneArrivo);
 
         //se NON esiste il percorso
@@ -1582,7 +1577,7 @@ void PianificaPercorso(){
             stampaPercorsoPianificato(percorsoTrovato, distanzaStazioneArrivo);
         }
 
-        //deallochiamo memoria che NON ci serve più per i prossimi percorsi
+        //deallocare la memoria che NON serve per i prossimi percorsi
         free(stazioniIntermedie);
         if (percorsoTrovato!=NULL){
             free(percorsoTrovato);
@@ -1591,34 +1586,35 @@ void PianificaPercorso(){
 }
 
 /**
- * Eseguire il comando letto da stIN.
+ * Gestione dell'interpretazione del comando letto dal stIN.
  *
  * @param comando stringa che rappresenta il comando da eseguire.
  */
-void ProcessaComando(const char comando[]){
+void processaComando(const char comando[]){
+    //che comando è stato inserito
     switch (comando[0]) {
         //aggiungi: -stazione OR -auto
         case 'a':
             //aggiungi-stazione
             if(comando[9]=='s'){
-                AggiungiStazione();
+                aggiungiStazione();
             }
             //aggiungi-auto
             else{
-                AggiungiAuto();
+                aggiungiAuto();
             }
             break;
         //demolisci-stazione
         case 'd':
-            DemolisciStazione();
+            demolisciStazione();
             break;
         //rottama-auto
         case 'r':
-            RottamaAuto();
+            rottamaAuto();
             break;
         //pianifica-percorso
         case 'p':
-            PianificaPercorso();
+            pianificaPercorso();
             break;
     }
 }
@@ -1633,11 +1629,11 @@ void ProcessaComando(const char comando[]){
  */
 int main() {
     /**
-     * Carattere per capire non abbiamo più niente da leggere da stIN.
+     * Carattere per capire che NON bisogna più leggere da stIN.
      */
     int fine;
     /**
-     * Stringa che rappresenta il comando che bisogna eseguire.
+     * Stringa che rappresenta il comando da eseguire.
      */
     char comando[LUNGHEZZA_MAX_COMANDI]="";
 
@@ -1645,14 +1641,15 @@ int main() {
     //inizializzazione autostrada
     autostrada= creaAutostrada(DIMENSIONE_INIZIALE_AUTOSTRADA);
 
-    //continua a leggere fino a che non leggi EOF
+    //continuare a leggere fino a che non si legge EOF
     do{
-        //leggi i comandi che arrivano da stIN
+        //legge i comandi che arrivano da stIN
         fine=scanf("%s", comando);
 
         //processa il comando letto
-        ProcessaComando(comando);
-    }while(fine!=EOF); //se leggi EOF termina
+        processaComando(comando);
+    }while(fine!=EOF);
 
+    //il programma è terminato correttamente
     return 0;
 }
