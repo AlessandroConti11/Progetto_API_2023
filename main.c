@@ -152,6 +152,7 @@ unsigned int funzioneDiHash(unsigned int chiave, unsigned int capacita){
  * @return la nuova capacità della HashTable.
  */
 int nuovaCapacita(unsigned int capacitaIniziale){
+    //ritorna la nuova capacità della HashTable
     return (int) capacitaIniziale*2+11;
 }
 
@@ -340,7 +341,7 @@ int ricercaAuto(struct HashTableParcoAuto *parcoAuto, unsigned int autonomia){
         if(corrente->autonomia==autonomia){
             return 1;
         }
-            //guardiamo nel prossimo HashNode
+        //guardiamo nel prossimo HashNode
         else{
             corrente=corrente->successivo;
         }
@@ -367,6 +368,7 @@ unsigned int ricercaMassimaAutonomia(struct HashTableParcoAuto *parcoAuto, unsig
      */
     struct HashNodeAuto *corrente=NULL;
 
+
     //per tutta la dimensione della HashTable
     for (int i = 0; i < dimensioneMassima; ++i) {
         corrente=parcoAuto->autoNode[i];
@@ -380,6 +382,7 @@ unsigned int ricercaMassimaAutonomia(struct HashTableParcoAuto *parcoAuto, unsig
         }
     }
 
+    //ritorna la massima autonomia
     return massimo;
 }
 
@@ -397,6 +400,7 @@ struct HashTableAutostrada *creaAutostrada(unsigned int capacitaIniziale){
      * Nuova HashTable.
      */
     struct HashTableAutostrada *hashTable=(struct HashTableAutostrada *) malloc(sizeof(struct HashTableAutostrada));
+
 
     //inizializza valori
     hashTable->capacita=capacitaIniziale;
@@ -516,6 +520,14 @@ void eliminaStazione(struct HashTableAutostrada *htAutostrada, unsigned int dist
      * stazionePrecedente=stazioneCorrente.
      */
     struct HashNodeStazione *stazionePrecedente=NULL;
+    /**
+     * Auto corrente presente in posizione i nel parco auto.
+     */
+    struct HashNodeAuto *corrente;
+    /**
+     * Nodo precedente da eliminare.
+     */
+    struct HashNodeAuto *precedente;
 
 
     //trova il nodo con la chiave corrispondente, assegna stazioneCorrente AND stazionePrecedente
@@ -528,13 +540,13 @@ void eliminaStazione(struct HashTableAutostrada *htAutostrada, unsigned int dist
     if(stazioneCorrente == NULL){
         return;
     }
-        //chiave trovata
+    //chiave trovata
     else{
         //il nodo da eliminare è il primo della lista presente nella posizione indicata
         if(stazionePrecedente == NULL){
             htAutostrada->stazioni[indice]=stazioneCorrente->successivo;
         }
-            //il nodo da eliminare NON è il primo della lista presente nella posizione indicate
+        //il nodo da eliminare NON è il primo della lista presente nella posizione indicate
         else{
             stazionePrecedente->successivo=stazioneCorrente->successivo;
         }
@@ -542,15 +554,11 @@ void eliminaStazione(struct HashTableAutostrada *htAutostrada, unsigned int dist
 
     //elimina macchine
     for (int i = 0; i < stazioneCorrente->parcoAuto->capacita; ++i) {
-        /**
-         * Auto corrente presente in posizione i nel parco auto.
-         */
-        struct HashNodeAuto *corrente=stazioneCorrente->parcoAuto->autoNode[i];
+        //nodo corrente
+        corrente=stazioneCorrente->parcoAuto->autoNode[i];
         while (corrente!=NULL){
-            /**
-             * Nodo precedente da eliminare.
-             */
-            struct HashNodeAuto *precedente=corrente;
+            //nodo precedente
+            precedente=corrente;
             corrente=corrente->successivo;
             free(precedente);
         }
@@ -589,7 +597,7 @@ struct HashNodeStazione *ricercaStazione(struct HashTableAutostrada *htAutostrad
         if(corrente->distanza==distanza){
             return corrente;
         }
-            //guardiamo nel prossimo HashNode
+        //guardiamo nel prossimo HashNode
         else{
             corrente=corrente->successivo;
         }
@@ -622,7 +630,7 @@ int StazioneGiaPresente(struct HashTableAutostrada *htAutostrada, unsigned int d
         if(corrente->distanza==distanza){
             return 1;
         }
-            //guardiamo nel prossimo HashNode
+        //guardiamo nel prossimo HashNode
         else{
             corrente=corrente->successivo;
         }
@@ -687,6 +695,10 @@ struct ArrayNodeStazione *tutteLeStazioniInAvanti(unsigned int partenza, unsigne
      * Stazione ricercata.
      */
     struct HashNodeStazione *ricerca=NULL;
+    /**
+     * Nodo corrente presente nella cella i.
+     */
+    struct HashNodeStazione *corrente;
 
 
     //controllare solo le stazioni comprese tra partenza e arrivo
@@ -709,23 +721,15 @@ struct ArrayNodeStazione *tutteLeStazioniInAvanti(unsigned int partenza, unsigne
                 posizioneArray++;
             }
         }
-
-        //numero di stazioni tra quella di partenza e quella d'arrivo
-        (*numeroDiStazioni)=posizioneArray;
-        //stazioni intermedie tra quella di partenza e quella di arrivo
-        stazioniIntermedie=(struct ArrayNodeStazione *) realloc(stazioniIntermedie, (*numeroDiStazioni)*sizeof(struct ArrayNodeStazione));
-        return stazioniIntermedie;
     }
     //controllare tutte le stazioni se sono comprese tra partenza e arrivo
     else{
+        //per ogni stazione nell'autostrada
         for (int i = 0; i < autostrada->capacita; ++i) {
             //nella cella i c'è almeno 1 stazione
             if(autostrada->stazioni[i]!=NULL){
-                /**
-                 * Nodo corrente presente nella cella i.
-                 */
-                struct HashNodeStazione *corrente=autostrada->stazioni[i];
-
+                //stazione corrente
+                corrente=autostrada->stazioni[i];
                 while (corrente!=NULL){
                     if(corrente->distanza>=partenza && corrente->distanza<=arrivo){
                         //se l'Array stazioniIntermedie[] è pieno lo reallochiamo
@@ -744,13 +748,15 @@ struct ArrayNodeStazione *tutteLeStazioniInAvanti(unsigned int partenza, unsigne
             }
         }
 
-        //numero di stazioni tra quella di partenza e quella d'arrivo
-        (*numeroDiStazioni)=posizioneArray;
-        //stazioni intermedie tra quella di partenza e quella di arrivo
-        stazioniIntermedie=(struct ArrayNodeStazione *) realloc(stazioniIntermedie, (*numeroDiStazioni)*sizeof(struct ArrayNodeStazione));
-        qsort(stazioniIntermedie, (*numeroDiStazioni), sizeof(struct ArrayNodeStazione), comparazioneAvanti);
-        return stazioniIntermedie;
+        //ordina stazioniIntermedie - partenza --> arrivo
+        qsort(stazioniIntermedie, posizioneArray, sizeof(struct ArrayNodeStazione), comparazioneAvanti);
     }
+
+    //numero di stazioni tra quella di partenza e quella d'arrivo
+    (*numeroDiStazioni)=posizioneArray;
+    //stazioni intermedie tra quella di partenza e quella di arrivo
+    stazioniIntermedie=(struct ArrayNodeStazione *) realloc(stazioniIntermedie, (*numeroDiStazioni)*sizeof(struct ArrayNodeStazione));
+    return stazioniIntermedie;
 }
 
 /**
@@ -780,6 +786,10 @@ struct ArrayNodeStazione *tutteLeStazioniAllIndietro(unsigned int partenza, unsi
      * Stazione ricercata.
      */
     struct HashNodeStazione *ricerca=NULL;
+    /**
+     * Nodo corrente presente nella cella i.
+     */
+    struct HashNodeStazione *corrente;
 
 
     //controllare solo le stazioni comprese tra partenza e arrivo
@@ -802,22 +812,14 @@ struct ArrayNodeStazione *tutteLeStazioniAllIndietro(unsigned int partenza, unsi
                 posizioneArray++;
             }
         }
-
-        //numero di stazioni tra quella di partenza e quella d'arrivo
-        (*numeroDiStazioni)=posizioneArray;
-        //stazioni intermedie tra quella di partenza e quella di arrivo
-        stazioniIntermedie=(struct ArrayNodeStazione *) realloc(stazioniIntermedie, ((*numeroDiStazioni)*sizeof(struct ArrayNodeStazione)));
-        return stazioniIntermedie;
     }
     //controllare tutte le stazioni se sono comprese tra partenza e arrivo
     else{
         for (int i = 0; i < autostrada->capacita; ++i) {
             //nella cella i c'è almeno 1 stazione
             if(autostrada->stazioni[i]!=NULL){
-                /**
-                 * Nodo corrente presente nella cella i.
-                 */
-                struct HashNodeStazione *corrente=autostrada->stazioni[i];
+                //stazione corrente
+                corrente=autostrada->stazioni[i];
 
                 while (corrente!=NULL){
                     if(corrente->distanza<=partenza && corrente->distanza>=arrivo){
@@ -837,13 +839,15 @@ struct ArrayNodeStazione *tutteLeStazioniAllIndietro(unsigned int partenza, unsi
             }
         }
 
-        //numero di stazioni tra quella di partenza e quella d'arrivo
-        (*numeroDiStazioni)=posizioneArray;
-        //stazioni intermedie tra quella di partenza e quella di arrivo
-        stazioniIntermedie=(struct ArrayNodeStazione *) realloc(stazioniIntermedie, (*numeroDiStazioni)*sizeof(struct ArrayNodeStazione));
-        qsort(stazioniIntermedie, (*numeroDiStazioni), sizeof(struct ArrayNodeStazione), comparazioneIndietro);
-        return stazioniIntermedie;
+        //ordinamento stazioniIntermedie - partenza --> arrivo
+        qsort(stazioniIntermedie, posizioneArray, sizeof(struct ArrayNodeStazione), comparazioneIndietro);
     }
+
+    //numero di stazioni tra quella di partenza e quella d'arrivo
+    (*numeroDiStazioni)=posizioneArray;
+    //stazioni intermedie tra quella di partenza e quella di arrivo
+    stazioniIntermedie=(struct ArrayNodeStazione *) realloc(stazioniIntermedie, ((*numeroDiStazioni)*sizeof(struct ArrayNodeStazione)));
+    return stazioniIntermedie;
 }
 
 /**
@@ -855,6 +859,7 @@ struct ArrayNodeStazione *tutteLeStazioniAllIndietro(unsigned int partenza, unsi
  * @return un Array che contiene le stazioni tra quella di partenza e quella di arrivo con l'autonomia massima dell'auto nel loro parco auto.
  */
 struct ArrayNodeStazione *tutteLeStazioni(unsigned int partenza, unsigned int arrivo, int *numeroDiStazioni){
+    //ritorna le stazioni comprese tra la partenza e l'arrivo
     if(partenza<arrivo){
         return tutteLeStazioniInAvanti(partenza, arrivo, numeroDiStazioni);
     }
@@ -873,11 +878,15 @@ struct ArrayNodeStazione *tutteLeStazioni(unsigned int partenza, unsigned int ar
  * @return indice della stazione più lontana.
  */
 int stazionePiuLontana(struct ArrayNodeStazione stazioni[], int numeroStazioni, unsigned int autonomiaMassima){
+    //ricerca per tutte le stazioni
     for (int i = 1; i < numeroStazioni; ++i) {
+        //se la distanza tra la stazione corrente e quella iniziale è maggiore dell'autonomia massima
         if(autonomiaMassima<abs((int) stazioni[i].distanza-(int) stazioni[0].distanza)){
+            //ritorna la posizione nell'Array
             return --i;
         }
     }
+    //ritorna la posizione nell'Array - posizione finale
     return (numeroStazioni-1);
 }
 
@@ -913,11 +922,11 @@ int indiceStazioneInAvanti(struct ArrayNodeStazione stazioni[], int numeroStazio
         if(stazioni[medio].distanza==distanza){
             return medio;
         }
-            //il valore da ricercare si trova nella metà superiore
+        //il valore da ricercare si trova nella metà superiore
         else if(stazioni[medio].distanza<distanza){
             sx=medio+1;
         }
-            //il valore da ricercare si trova nella metà inferiore
+        //il valore da ricercare si trova nella metà inferiore
         else{
             dx=medio-1;
         }
@@ -959,11 +968,11 @@ int indiceStazioneAllIndietro(struct ArrayNodeStazione stazioni[], int numeroSta
         if(stazioni[medio].distanza==distanza){
             return medio;
         }
-            //il valore da ricercare si trova nella metà superiore
+        //il valore da ricercare si trova nella metà superiore
         else if(stazioni[medio].distanza>distanza){
             sx=medio+1;
         }
-            //il valore da ricercare si trova nella metà inferiore
+        //il valore da ricercare si trova nella metà inferiore
         else{
             dx=medio-1;
         }
