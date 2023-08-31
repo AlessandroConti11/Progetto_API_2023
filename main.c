@@ -776,6 +776,7 @@ int stazionePiuLontana(struct ArrayNodeStazione stazioni[], int numeroStazioni, 
             return --i;
         }
     }
+
     //ritornare la posizione nell'Array - posizione finale
     return (numeroStazioni-1);
 }
@@ -864,6 +865,7 @@ struct ArrayNodeStazione *tutteLeStazioniInAvanti(unsigned int partenza, unsigne
     (*numeroDiStazioni)=posizioneArray;
     //stazioni intermedie tra quella di partenza e quella di arrivo
     stazioniIntermedie=(struct ArrayNodeStazione *) realloc(stazioniIntermedie, (*numeroDiStazioni)*sizeof(struct ArrayNodeStazione));
+    //ritorna le stazioni comprese tra la stazione di partenza e quella di arrivo
     return stazioniIntermedie;
 }
 
@@ -952,6 +954,7 @@ struct ArrayNodeStazione *tutteLeStazioniAllIndietro(unsigned int partenza, unsi
     (*numeroDiStazioni)=posizioneArray;
     //stazioni intermedie tra quella di partenza e quella di arrivo
     stazioniIntermedie=(struct ArrayNodeStazione *) realloc(stazioniIntermedie, ((*numeroDiStazioni)*sizeof(struct ArrayNodeStazione)));
+    //ritorna le stazioni comprese tra la stazione di partenza e quella di arrivo
     return stazioniIntermedie;
 }
 
@@ -1388,6 +1391,7 @@ void aggiungiAuto(){
     }
     //stazione presente
     else{
+        //ricerca stazione di interesse
         stazione= ricercaStazioneNellAutostrada(autostrada, distanzaStazione);
 
         //leggere l'autonomia dell'auto da aggiungere
