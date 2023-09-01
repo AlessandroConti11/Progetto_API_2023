@@ -15,7 +15,7 @@
 /**
  * Define --> Dimensione iniziale della HashTable che rappresenta il parco auto.
  */
-#define DIMENSIONE_INIZIALE_PARCO_AUTO 157
+#define DIMENSIONE_INIZIALE_PARCO_AUTO 73
 
 /**
  * Define --> Dimensione iniziale della HashTable che rappresenta l'autostrada.
