@@ -15,12 +15,12 @@
 /**
  * Define --> Dimensione iniziale della HashTable che rappresenta il parco auto.
  */
-#define DIMENSIONE_INIZIALE_PARCO_AUTO 13
+#define DIMENSIONE_INIZIALE_PARCO_AUTO 157
 
 /**
  * Define --> Dimensione iniziale della HashTable che rappresenta l'autostrada.
  */
-#define DIMENSIONE_INIZIALE_AUTOSTRADA 31
+#define DIMENSIONE_INIZIALE_AUTOSTRADA 157
 
 /**
  * Define --> Percentuale oltre al quale andrà reallocato la HashTable.
