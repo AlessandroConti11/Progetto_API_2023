@@ -1,4 +1,4 @@
-# ProgettoAPI2023
+# ProgettoAPI2023 - CercaPercorso
 
 
 Author: Alessandro Conti - [AlessandroConti11](https://github.com/AlessandroConti11)
@@ -7,7 +7,8 @@ License: [MIT license](LICENSE).
 
 Tags: `#algorithm`, `#C`, `#data_structure`, `#polimi`, `#prova_finale`, `#software_engineering`.
 
----
+
+## University
 
 Politecnico di Milano.
 
@@ -15,13 +16,19 @@ Academic Year: 2022/2023.
 
 052509 - Prova Finale (Progetto di Algoritmi e Strutture Dati) - professor Barenghi Alessandro.
 
-----
 
-Project specifications are in the folder: *Specifiche/*.
+## Specification
+
+_Specification overview_: 
+- find the path to travel from A station to B station;
+- manage service stations on the highway.
+
+Project specifications in full are in the folder: *Specifiche/*.
 
 The test cases provided to verify the correctness and timing of the project in the implementation phase can be found in the folder: *Specifiche/Open_Test_Case/*.
 
----
+
+## How to run
 
 To ensure that the project works properly, you must compile it and run it in a Unix environment from the terminal by following these steps:
 
@@ -38,7 +45,8 @@ To ensure that the project works properly, you must compile it and run it in a U
     ./EXECUTABLE
     ```
 
----
+
+## Final consideration
 
 Final Evaluation: **30L/30**
 
@@ -47,4 +55,3 @@ Timing:
 - Memory Used = **55.1 MiB**
 
 ![immagine tempistiche](Specifiche/tempistiche_immagine.png)
-
