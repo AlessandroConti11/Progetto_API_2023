@@ -13,7 +13,7 @@ Politecnico di Milano.
 
 Academic Year: 2022/2023.
 
-Prova Finale (Progetto di Algoritmi e Strutture Data) - professore Barenghi Alessandro.
+052509 - Prova Finale (Progetto di Algoritmi e Strutture Dati) - professor Barenghi Alessandro.
 
 ----
 
