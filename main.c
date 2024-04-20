@@ -1310,7 +1310,7 @@ void aggiungiStazione(){
         //la stazione NON è stata aggiunta
         printf("non aggiunta\n");
 
-        //devo comunque leggere le auto inserite in input altrimenti restano nel buffer
+        //bisogna comunque leggere le auto inserite in input altrimenti restano nel buffer
         do {
             returnScanf= getc_unlocked(stdin);
         } while (returnScanf!='\n');
@@ -1384,7 +1384,7 @@ void aggiungiAuto(){
         //auto NON aggiunta
         printf("non aggiunta\n");
 
-        //devo comunque leggere l'auto inserita in input altrimenti resta nel buffer
+        //bisogna comunque leggere le auto inserite in input altrimenti restano nel buffer
         do {
             returnScanf= getc_unlocked(stdin);
         } while (returnScanf!='\n');
