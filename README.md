@@ -45,7 +45,23 @@ To ensure that the project works properly, you must compile it and run it in a U
     ./EXECUTABLE
     ```
 
+<br>
 
+The Makefile in the repository can also be used to compile the code.
+ - this option allows you to compile with the following tags: *-Wall -Werror -O2 -g3*
+     ```bash
+     make compile
+     ```
+ - if you want to specify different tags, you can set them
+    ```bash
+    make compile CFLAGS=YOUR_FLAGS
+    ```
+- if you want to use Address SANitizer 
+    ```bash
+    make asan
+    ```
+
+   
 ## Final consideration
 
 Final Evaluation: **30L/30**
