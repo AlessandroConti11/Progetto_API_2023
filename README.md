@@ -5,7 +5,7 @@ Author: Alessandro Conti - [AlessandroConti11](https://github.com/AlessandroCont
 
 License: [MIT license](LICENSE).
 
-Tags: `#algorithm`, `#C`, `#data_structure`, `#polimi`, `#prova_finale`, `#software_engineering`.
+Tags: `#algorithm`, `#C`, `#computer_engineering`, `#data_structure`, `#polimi`, `#prova_finale`.
 
 
 ## University
