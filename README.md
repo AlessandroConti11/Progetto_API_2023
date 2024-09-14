@@ -20,7 +20,7 @@ Academic Year: 2022/2023.
 ## Specification
 
 _Specification overview_: 
-- find the path to travel from A station to B station;
+- search the path to travel from A station to B station;
 - manage service stations on the highway.
 
 Project specifications in full are in the folder: *Specifiche/*.
